@@ -30,6 +30,12 @@ export const router = createBrowserRouter([
     })),
   },
   {
+    path: '/editor/:branch/:course/:note',
+    lazy: () => import('./pages/EditorPage').then(m => ({
+      Component: function EditorRoute() { return <m.EditorPage /> },
+    })),
+  },
+  {
     path: '*',
     lazy: () => import('./pages/NotFoundPage').then(m => ({
       Component: function NotFoundRoute() { return <Layout><m.NotFoundPage /></Layout> },
