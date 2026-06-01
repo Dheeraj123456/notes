@@ -1,0 +1,278 @@
+---
+title: Generics & Monomorphization
+description: Monomorphization process, generic functions/structs/methods, static vs dynamic dispatch, code bloat
+---
+
+# Generics & Monomorphization: Under the Hood
+
+## Overview
+
+**Monomorphization** is the process where Rust's compiler generates **specialized versions** of generic code for each concrete type. This enables zero-cost abstractions while maintaining type safety.
+
+---
+
+## 1. What is Monomorphization?
+
+### Generic Code to Specialized Code
+
+```rust
+fn print_it<T: std::fmt::Debug>(val: T) {
+    println!("{:?}", val);
+}
+
+print_it(5i32);
+print_it("hello");
+print_it(3.14f64);
+```
+
+**At compile time, Rust generates:**
+
+```rust
+fn print_it_i32(val: i32) { println!("{:?}", val); }
+fn print_it_str(val: &str) { println!("{:?}", val); }
+fn print_it_f64(val: f64) { println!("{:?}", val); }
+```
+
+**Result:** No runtime overhead — each call is **direct**, not through dynamic dispatch.
+
+---
+
+## 2. The Monomorphization Process
+
+```plantuml
+@startuml
+state "Generic Function" as gen: fn<T>(T)\nGeneric type parameter
+state "Collection" as coll: Code uses:\nprint_it(5i32)\nprint_it("str")\nprint_it(3.14f64)
+state "Monomorphization" as mono: Compiler scans for\nconcrete types
+state "Generate Specializations" as gen_spec: print_it<i32>\nprint_it<&str>\nprint_it<f64>
+state "Compile Each" as compile: Compile all specializations\nto native code
+state "Link" as link: Link all versions into binary
+
+gen --> coll: Collect usage sites
+coll --> mono: Analyze
+mono --> gen_spec: Discover concrete types
+gen_spec --> compile: Generate code
+compile --> link: Final binary with all versions
+@enduml
+```
+
+---
+
+## 3. Generic Functions
+
+```rust
+fn identity<T>(x: T) -> T { x }
+
+let a = identity(42);           // i32
+let b = identity("hello");      // &str
+let c = identity(vec![1, 2]);   // Vec<i32>
+```
+
+**Monomorphized:**
+
+```plantuml
+@startuml
+rectangle "Generated Functions" {
+    rectangle "identity<i32>" {
+        rectangle "fn identity_i32(x: i32) -> i32 { x }" #E8F4F8
+    }
+    rectangle "identity<&str>" {
+        rectangle "fn identity_str(x: &str) -> &str { x }" #D4E8F0
+    }
+    rectangle "identity<Vec<i32>>" {
+        rectangle "fn identity_vec_i32(x: Vec<i32>) -> Vec<i32> { x }" #C0D8E8
+    }
+}
+@enduml
+```
+
+---
+
+## 4. Generic Structs
+
+```rust
+struct Pair<T> { first: T, second: T }
+
+let pair_i32 = Pair { first: 1, second: 2 };
+let pair_str = Pair { first: "a", second: "b" };
+```
+
+**Compiler generates separate types for each concrete instantiation:**
+
+- `Pair<i32>`: 8 bytes
+- `Pair<&str>`: 16 bytes (2 pointers + 2 lengths)
+- `Pair<String>`: 48 bytes (2 Strings, each 24 bytes)
+
+---
+
+## 5. Generic Methods
+
+```rust
+impl<T> Pair<T> {
+    fn new(first: T, second: T) -> Self { Pair { first, second } }
+    fn first(&self) -> &T { &self.first }
+}
+```
+
+Each monomorphized type gets **its own method implementations**.
+
+---
+
+## 6. Trait Bounds and Monomorphization
+
+### Static Dispatch (Monomorphized)
+
+```rust
+fn print_it<T: std::fmt::Debug>(x: T) {
+    println!("{:?}", x);
+}
+
+print_it(5);        // Generate: print_it<i32>
+print_it("hello");  // Generate: print_it<&str>
+```
+
+Two functions generated, each specialized.
+
+### Dynamic Dispatch (Not Monomorphized)
+
+```rust
+fn print_it(x: &dyn std::fmt::Debug) {
+    println!("{:?}", x);
+}
+
+print_it(&5);        // No specialization — virtual call
+print_it(&"hello");  // No specialization — virtual call
+```
+
+One function generated, uses virtual function calls.
+
+→ See [[cs/rust/15-trait-objects|Trait Objects]] for details.
+
+---
+
+## 7. Generic Instantiation Sites
+
+### Code Bloat: Monomorphization Explosion
+
+```rust
+fn generic_swap<T>(a: &mut T, b: &mut T) {
+    std::mem::swap(a, b);
+}
+
+// Used with many types → many specialized versions
+generic_swap(&mut x_i32, &mut y_i32);
+generic_swap(&mut x_String, &mut y_String);
+generic_swap(&mut x_Vec, &mut y_Vec);
+```
+
+**Trade-off:**
+- ✅ **Benefit:** Zero runtime overhead, specialization optimizations
+- ❌ **Cost:** Larger binary size ("code bloat")
+
+### Mitigation Strategies
+
+```rust
+// Strategy 1: Move generic logic to non-generic function
+fn swap_generic<T>(a: &mut T, b: &mut T) {
+    unsafe { std::ptr::swap(a, b); }
+}
+
+// Strategy 2: Share code via references (dynamic dispatch)
+fn swap_dyn(a: &mut dyn Any, b: &mut dyn Any) {
+    // Slower, but single implementation
+}
+```
+
+---
+
+## 8. Monomorphization vs Dynamic Dispatch
+
+```plantuml
+@startuml
+rectangle "Static Dispatch (Monomorphization)" {
+    rectangle "Generic code\nfn<T>(x: T)" #E8F4F8
+    rectangle "Compiler specializes\nfor each T" #D4E8F0
+    rectangle "Multiple functions generated\n(one per type)" #C0D8E8
+    rectangle "Call site: Direct jump\n(zero overhead)" #B8D0E0
+}
+
+rectangle "Dynamic Dispatch (Trait Objects)" {
+    rectangle "Generic code\nfn(x: &dyn Trait)" #E8F4F8
+    rectangle "Compiler generates ONE function" #D4E8F0
+    rectangle "Single function with vtable" #C0D8E8
+    rectangle "Call site: Virtual call\n(indirect jump)" #FFE8D6
+}
+
+note right of "Static Dispatch (Monomorphization)" : Faster\nLarger binary
+note right of "Dynamic Dispatch (Trait Objects)" : Slower\nSmaller binary
+@enduml
+```
+
+---
+
+## 9. Const Generics
+
+### Const Type Parameters
+
+```rust
+struct Array<T, const N: usize> {
+    data: [T; N],
+}
+
+let arr1: Array<i32, 5> = Array { data: [0; 5] };
+let arr2: Array<i32, 10> = Array { data: [0; 10] };
+```
+
+Each const value generates **new specialization**.
+
+---
+
+## 10. Compilation Time Impact
+
+### Monomorphization Increases Compile Time
+
+```
+Compile time = parsing + analysis + monomorphization + codegen + linking
+More generic usage = More monomorphizations = Longer compile time
+```
+
+---
+
+## 11. Example: `Vec<T>` Monomorphization
+
+```rust
+let v1: Vec<i32> = vec![1, 2, 3];
+let v2: Vec<String> = vec!["a".to_string()];
+```
+
+```plantuml
+@startuml
+rectangle "Vec Monomorphizations" {
+    rectangle "Vec<i32>" {
+        rectangle "struct Vec_i32 {\n  ptr: *mut i32,\n  len: usize,\n  cap: usize\n}" #E8F4F8
+        rectangle "impl<i32> for Vec_i32 {\n  fn push(self: &mut, i32) {...}\n  fn pop(self: &mut) -> Option<i32> {...}\n}" #D4E8F0
+    }
+    rectangle "Vec<String>" {
+        rectangle "struct Vec_String {\n  ptr: *mut String,\n  len: usize,\n  cap: usize\n}" #C0D8E8
+        rectangle "impl<String> for Vec_String {\n  fn push(self: &mut, String) {...}\n  fn pop(self: &mut) -> Option<String> {...}\n}" #B8D0E0
+    }
+}
+@enduml
+```
+
+---
+
+## Key Takeaways
+
+| Aspect | Details |
+|--------|---------|
+| **Monomorphization** | Compile-time specialization for each concrete type |
+| **Static Dispatch** | Direct function calls, zero runtime overhead |
+| **Binary Size** | Increases with more monomorphizations |
+| **Compile Time** | Increases with more monomorphizations |
+| **Optimization** | Each specialization can be optimized independently |
+| **vs Dynamic Dispatch** | Faster (static) vs smaller binaries (dynamic) |
+
+---
+
+**Next:** [[cs/rust/10-traits|Trait System]] — Learn virtual tables and dynamic dispatch

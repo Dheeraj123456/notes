@@ -1,0 +1,6 @@
+{
+  "id": "machine-learning",
+  "name": "Machine Learning",
+  "description": "Regression, classification, neural networks, and more",
+  "order": 1
+}

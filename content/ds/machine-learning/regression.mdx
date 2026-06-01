@@ -1,0 +1,69 @@
+---
+title: Regression
+description: Linear regression, loss functions, and regularization
+---
+
+# Regression
+
+**Regression** models the relationship between a dependent variable and one or more independent variables.
+
+## Linear Regression
+
+$$y = \beta_0 + \beta_1 x + \varepsilon$$
+
+Where:
+- $y$ is the predicted value
+- $\beta_0$ is the intercept
+- $\beta_1$ is the slope coefficient
+- $x$ is the input feature
+- $\varepsilon$ is the error term
+
+## Loss Function: Mean Squared Error
+
+$$\text{MSE} = \frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2$$
+
+The goal is to minimize MSE by finding optimal $\beta_0$ and $\beta_1$.
+
+## Gradient Descent
+
+```python
+def gradient_descent(X, y, lr=0.01, epochs=1000):
+    m, n = X.shape
+    theta = np.zeros(n)
+
+    for _ in range(epochs):
+        predictions = X @ theta
+        errors = predictions - y
+        gradient = (1/m) * X.T @ errors
+        theta -= lr * gradient
+
+    return theta
+```
+
+## Normal Equation
+
+For linear regression, the optimal parameters have a closed-form solution:
+
+$$\hat{\beta} = (X^T X)^{-1} X^T y$$
+
+## Regularization
+
+Regularization prevents overfitting by adding a penalty term:
+
+**Lasso (L1)**: $$\text{Loss} = \text{MSE} + \lambda \sum_{j=1}^{p} |\beta_j|$$
+
+**Ridge (L2)**: $$\text{Loss} = \text{MSE} + \lambda \sum_{j=1}^{p} \beta_j^2$$
+
+## Evaluation Metrics
+
+| Metric | Formula | Description |
+|--------|---------|-------------|
+| MSE | $\frac{1}{n}\sum(y_i - \hat{y}_i)^2$ | Mean squared error |
+| RMSE | $\sqrt{\text{MSE}}$ | Root mean squared error |
+| MAE | $\frac{1}{n}\sum|y_i - \hat{y}_i|$ | Mean absolute error |
+| R² | $1 - \frac{\text{SS}_\text{res}}{\text{SS}_\text{tot}}$ | Coefficient of determination |
+
+## See Also
+
+- [[ds/machine-learning/neural-networks|Neural Networks]] — non-linear regression
+- [[ds/statistics/probability|Probability]] — statistical foundations

@@ -1,0 +1,7 @@
+{
+  "id": "cs",
+  "name": "Computer Science",
+  "description": "Data structures, algorithms, and software engineering fundamentals",
+  "icon": "💻",
+  "order": 1
+}

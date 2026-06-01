@@ -1,0 +1,7 @@
+{
+  "id": "ds",
+  "name": "Data Science",
+  "description": "Machine learning, statistics, and data analysis",
+  "icon": "📊",
+  "order": 2
+}

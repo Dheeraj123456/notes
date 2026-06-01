@@ -1,0 +1,68 @@
+---
+title: Probability Theory
+description: Fundamental concepts in probability
+---
+
+# Probability Theory
+
+**Probability** quantifies the likelihood of events occurring.
+
+## Basic Rules
+
+For events $A$ and $B$:
+
+$$P(A \cup B) = P(A) + P(B) - P(A \cap B)$$
+
+$$P(A|B) = \frac{P(A \cap B)}{P(B)}$$
+
+## Conditional Probability
+
+The probability of $A$ given $B$:
+
+$$P(A|B) = \frac{P(A \cap B)}{P(B)} = \frac{P(B|A) \cdot P(A)}{P(B)}$$
+
+## Bayes' Theorem
+
+$$P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}$$
+
+This is the foundation of Bayesian inference:
+
+$$
+\text{Posterior} = \frac{\text{Likelihood} \times \text{Prior}}{\text{Evidence}}
+$$
+
+## Probability Distributions
+
+### Normal (Gaussian) Distribution
+
+$$f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}$$
+
+- $\mu$: mean (center)
+- $\sigma$: standard deviation (spread)
+- 68-95-99.7 rule
+
+### Binomial Distribution
+
+$$P(X=k) = \binom{n}{k} p^k (1-p)^{n-k}$$
+
+Number of successes in $n$ independent trials.
+
+### Poisson Distribution
+
+$$P(X=k) = \frac{\lambda^k e^{-\lambda}}{k!}$$
+
+Number of events in a fixed interval.
+
+## Law of Large Numbers
+
+As the sample size increases, the sample mean converges to the expected value:
+
+$$\bar{X}_n \xrightarrow{p} \mu$$
+
+## Central Limit Theorem
+
+The distribution of sample means approaches a normal distribution as $n$ increases, regardless of the population distribution.
+
+## See Also
+
+- [[ds/machine-learning/regression|Regression]] — statistical modeling

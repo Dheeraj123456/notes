@@ -1,0 +1,176 @@
+---
+title: Optimization
+description: Compiler optimizations, inlining, monomorphization, vectorization, SIMD, LTO, zero-cost abstractions
+---
+
+# Optimization: Compiler Optimizations and Zero-Cost Abstractions
+
+## Overview
+
+Rust abstractions (generics, traits, closures) compile away, producing the **same machine code** as hand-optimized C. Understanding optimizations helps write efficient code and predict performance.
+
+---
+
+## 1. Inlining
+
+```rust
+fn add(a: i32, b: i32) -> i32 { a + b }
+let result = add(x, y);
+```
+
+**Without inlining:** `call add; add rax, rbx; ret`
+**With inlining:** `add rax, rbx` (no call overhead!)
+
+```rust
+#[inline]        // Hint: inline this
+#[inline(never)] // Never inline
+```
+
+---
+
+## 2. Monomorphization Optimization
+
+```rust
+fn identity<T>(x: T) -> T { x }
+
+let i = identity(42);     // identity_i32
+let s = identity("hello"); // identity_str
+```
+
+Each specialization is independently optimized — zero overhead over manual specialization.
+
+---
+
+## 3. Dead Code Elimination
+
+```rust
+fn unused() {
+    let x = expensive_computation();  // Never used → eliminated
+}
+
+fn caller() {
+    unused();  // Function is a no-op after optimization
+}
+```
+
+---
+
+## 4. Loop Unrolling
+
+```rust
+for i in 0..4 {
+    buffer[i] = i as u8;
+}
+
+// Unrolled:
+// mov byte [buffer], 0
+// mov byte [buffer+1], 1
+// mov byte [buffer+2], 2
+// mov byte [buffer+3], 3
+```
+
+---
+
+## 5. Vectorization (SIMD)
+
+```rust
+for i in 0..1000 {
+    result[i] = a[i] + b[i];  // Auto-vectorized!
+}
+```
+
+```
+Scalar: 1 value per operation
+SSE:    4 values per operation (4× faster)
+AVX2:   8 values per operation (8× faster)
+```
+
+---
+
+## 6. Constant Folding
+
+```rust
+const BUFFER_SIZE: usize = 4 * 1024;       // 4096 at compile time
+const TAU: f64 = 2.0 * std::f64::consts::PI; // Folded to constant
+```
+
+---
+
+## 7. Devirtualization
+
+```rust
+fn call_animal<T: Animal>(a: &T) {
+    a.speak();  // Static dispatch — inlineable!
+}
+
+call_animal(&dog);  // Can inline Dog::speak()
+```
+
+---
+
+## 8. LTO: Link-Time Optimization
+
+```toml
+[profile.release]
+lto = true           # Whole-program optimization
+codegen-units = 1    # Single codegen unit
+```
+
+**LTO Benefits:** 5-20% faster binaries (at cost of compile time).
+
+---
+
+## 9. Zero-Cost Abstraction Example
+
+```rust
+let sum: i32 = (0..1000)
+    .map(|x| x * 2)
+    .filter(|x| x % 3 == 0)
+    .sum();
+
+// Compiles to identical machine code as:
+let mut sum = 0;
+for i in 0..1000 {
+    let x = i * 2;
+    if x % 3 == 0 { sum += x; }
+}
+```
+
+---
+
+## 10. Profile-Guided Optimization (PGO)
+
+```bash
+# Collect profiling data
+RUSTFLAGS="-C profile-use=profiles/default.profraw" cargo build -O
+```
+
+Compiler optimizes based on actual runtime patterns.
+
+---
+
+## 11. Compiler Flags
+
+```toml
+[profile.release]
+opt-level = 3      # 0-3, or "z" for size
+lto = true         # Link-time optimization
+codegen-units = 1  # Better optimization
+strip = true       # Strip debug symbols
+```
+
+---
+
+## Summary
+
+| Optimization | When | Benefit |
+|--------------|------|---------|
+| **Inlining** | Small functions | Eliminates call overhead |
+| **Monomorphization** | Generics | Zero overhead |
+| **Dead code elimination** | Unused code | Removes runtime |
+| **Vectorization** | Simple loops | 4-8× faster |
+| **LTO** | Whole program | 10-20% faster |
+
+---
+
+**Next:** [[cs/rust/22-advanced|Advanced Topics]] — Learn unsafe, FFI, SIMD, allocators

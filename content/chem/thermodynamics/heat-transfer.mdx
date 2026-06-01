@@ -1,0 +1,93 @@
+---
+title: Heat Transfer
+description: Conduction, convection, and radiation
+---
+
+# Heat Transfer
+
+**Heat transfer** is the movement of thermal energy from one system to another.
+
+## Three Modes
+
+### 1. Conduction
+
+Heat transfer through a solid material via molecular collisions.
+
+**Fourier's Law**:
+
+$$q = -k \frac{dT}{dx}$$
+
+Where:
+- $q$ = heat flux (W/m²)
+- $k$ = thermal conductivity
+- $\frac{dT}{dx}$ = temperature gradient
+
+### 2. Convection
+
+Heat transfer between a surface and a moving fluid.
+
+**Newton's Law of Cooling**:
+
+$$q = hA(T_s - T_\infty)$$
+
+Where:
+- $h$ = convective heat transfer coefficient
+- $A$ = surface area
+- $T_s$ = surface temperature
+- $T_\infty$ = fluid temperature
+
+Types:
+- **Natural convection** — fluid motion by buoyancy
+- **Forced convection** — fluid motion by external means (fan, pump)
+
+### 3. Radiation
+
+Heat transfer via electromagnetic waves. Requires no medium.
+
+**Stefan-Boltzmann Law**:
+
+$$q = \varepsilon \sigma A (T^4 - T_{\text{surr}}^4)$$
+
+Where:
+- $\varepsilon$ = emissivity (0 to 1)
+- $\sigma$ = Stefan-Boltzmann constant ($5.67 \times 10^{-8}$ W/m²·K⁴)
+- $T$ = absolute temperature of the surface
+- $T_{\text{surr}}$ = absolute temperature of surroundings
+
+## Mermaid Diagram
+
+```mermaid
+graph TB
+    subgraph Conduction
+        A[Solid] --> B[Molecular vibration]
+        B --> C[Energy transfer]
+    end
+    subgraph Convection
+        D[Surface] --> E[Fluid motion]
+        E --> F[Heat carried away]
+    end
+    subgraph Radiation
+        G[Hot object] --> H[EM waves]
+        H --> I[Cold object]
+    end
+```
+
+## Comparison
+
+| Mode | Medium | Mechanism | Equation |
+|------|--------|-----------|----------|
+| Conduction | Solid | Molecular vibration | $q = -k \nabla T$ |
+| Convection | Fluid | Bulk motion | $q = h\Delta T$ |
+| Radiation | None | EM waves | $q = \varepsilon\sigma T^4$ |
+
+## Heat Equation
+
+The general equation for heat conduction in a solid:
+
+$$\frac{\partial T}{\partial t} = \alpha \nabla^2 T + \frac{\dot{q}}{ \rho c_p}$$
+
+Where $\alpha = \frac{k}{\rho c_p}$ is the **thermal diffusivity**.
+
+## See Also
+
+- [[chem/thermodynamics/laws-of-thermodynamics|Laws of Thermodynamics]] — the principles behind heat transfer

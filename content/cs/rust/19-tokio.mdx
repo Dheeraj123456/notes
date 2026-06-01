@@ -1,0 +1,225 @@
+---
+title: Tokio
+description: Async runtime architecture, work-stealing scheduler, I/O multiplexing, timer wheel, task model
+---
+
+# Tokio Async Runtime: I/O Multiplexing and Scheduling Under the Hood
+
+## Overview
+
+Tokio is an **asynchronous runtime** built on top of Rust's Future trait. It provides sophisticated I/O multiplexing, work-stealing schedulers, and efficient resource management for high-concurrency applications.
+
+---
+
+## 1. What is a Runtime?
+
+```rust
+#[tokio::main]
+async fn main() {
+    // Runtime manages:
+    // 1. Spawning and scheduling tasks
+    // 2. Polling futures to completion
+    // 3. I/O notifications (epoll, kqueue, IOCP)
+    // 4. Timers and timeouts
+}
+```
+
+**Without runtime:** Futures sit idle. Nobody calls `poll()`.
+
+---
+
+## 2. Tokio Architecture
+
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+
+package "Tokio Runtime Architecture" {
+    package "Task Queue" as queues {
+        [Global queue of tasks] as global_queue #E8F4F8
+        [Per-thread local queues] as local_queues #D4E8F0
+    }
+    package "Work-Stealing Scheduler" as scheduler {
+        [Thread pool] as pool #C0D8E8
+        [Scheduler loop] as loop #B8D0E0
+    }
+    package "I/O Multiplexer" as io {
+        [epoll / kqueue / IOCP] as reactor #FFE8D6
+    }
+    package "Timer Wheel" as timers {
+        [Timeout management] as timer_driver #A8C8D8
+    }
+}
+
+queues --> scheduler : feed ready tasks
+io --> queues : wake I/O tasks
+timers --> queues : wake timer tasks
+@enduml
+```
+
+---
+
+## 3. Work-Stealing Scheduler
+
+### Problem: Load Balancing
+
+```
+Thread 1: Busy with heavy task
+Thread 2: Idle, nothing to do
+CPU 2 is wasted!
+```
+
+### Solution: Work Stealing
+
+```
+Thread 1: Busy → keeps own work
+Thread 2: Idle → steal from Thread 1's queue
+```
+
+---
+
+## 4. I/O Multiplexing
+
+### The Challenge
+
+```
+1000 concurrent connections
+→ Can't create 1000 threads (too expensive)
+→ Need single thread to monitor ALL connections
+Solution: I/O multiplexing (epoll, kqueue, IOCP)
+```
+
+### Efficiency
+
+```
+Thread per connection:
+- 1000 connections → 1000 threads → 2 GB stacks!
+
+I/O multiplexing (1 thread, 1000 connections):
+- Stack: 2 MB
+- epoll_wait: O(1) notification
+```
+
+---
+
+## 5. Timer Wheel
+
+### Problem: Many Timeouts
+
+```
+Naive: sorted list → Insert O(n), check O(n)
+10,000 timeouts → slow!
+```
+
+### Solution: Ring Buffer
+
+```
+Slot 0: Tasks expiring now
+Slot 1: Tasks expiring in 1 ms
+...
+Slot 999: Tasks expiring in 999 ms
+
+Insert: O(1) | Check: O(1) per tick
+```
+
+```plantuml
+@startuml
+rectangle "Timer Wheel (1000 slots)" {
+    rectangle "Slot 0\n(now)" #FFE8D6
+    rectangle "Slot 1\n(+1ms)" #FFD6D6
+    rectangle "Slot 2\n(+2ms)" #FFD0D0
+    rectangle "..." #F0F0F0
+    rectangle "Slot 999\n(+999ms)" #E8D6D6
+    rectangle "Pointer\n(advances each ms)" #E8F4F8
+}
+note right : Slot at pointer is checked\nTasks in this slot are woken
+@enduml
+```
+
+---
+
+## 6. Task Spawning
+
+```rust
+tokio::spawn(async {
+    // Runs independently on thread pool
+});
+```
+
+**Task lifecycle:** spawn → enqueue → pick → poll → pending/ready → wake/complete
+
+---
+
+## 7. Runtime Configuration
+
+```rust
+// Multi-threaded (default)
+#[tokio::main]
+async fn main() { }
+
+// Single-threaded
+#[tokio::main(flavor = "current_thread")]
+async fn main() { }
+
+// Custom
+use tokio::runtime;
+let rt = runtime::Builder::new_multi_thread()
+    .worker_threads(4)
+    .thread_name("worker")
+    .build()?;
+```
+
+---
+
+## 8. Blocking Operations
+
+```rust
+// CPU-bound work blocks executor!
+async fn process() {
+    let result = tokio::task::block_in_place(|| {
+        expensive_computation()  // Scheduler handles blocking
+    });
+}
+```
+
+---
+
+## 9. Efficiency
+
+```
+Per task:
+- Future state: ~100-1000 bytes
+- Task metadata: 64 bytes
+- No separate stack
+
+1 million tasks: ~100 MB (reasonable!)
+1 million threads: ~2 TB (impossible!)
+```
+
+---
+
+## 10. Performance: Sync vs Async
+
+```
+Sync Server (threads):
+- 1000 connections → 1000 threads → 2 GB memory
+
+Async Server (Tokio):
+- 1000 connections → 4-8 threads → 2 MB stacks
+- Throughput: 100-1000× higher
+```
+
+---
+
+## Summary
+
+| Component | Purpose | Technique |
+|-----------|---------|-----------|
+| **Scheduler** | Fair task distribution | Work-stealing |
+| **I/O Multiplexing** | Monitor thousands of fds | epoll/kqueue |
+| **Timer Wheel** | Efficient timeouts | Ring buffer |
+| **Task Queue** | Store pending work | Lock-free deque |
+
+---
+
+**Next:** [[cs/rust/20-macros|Macros]] — Learn metaprogramming and code generation

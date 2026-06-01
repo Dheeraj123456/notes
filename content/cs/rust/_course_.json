@@ -1,0 +1,6 @@
+{
+  "id": "rust",
+  "name": "Rust Programming",
+  "description": "Rust under-the-hood — memory, ownership, lifetimes, concurrency, and async runtimes",
+  "order": 3
+}

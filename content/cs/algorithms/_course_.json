@@ -1,0 +1,6 @@
+{
+  "id": "algorithms",
+  "name": "Algorithms",
+  "description": "Sorting, searching, dynamic programming, graph algorithms",
+  "order": 2
+}

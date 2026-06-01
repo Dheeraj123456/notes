@@ -1,0 +1,7 @@
+{
+  "id": "chem",
+  "name": "Chemical Engineering",
+  "description": "Thermodynamics, fluid mechanics, and process engineering",
+  "icon": "🧪",
+  "order": 3
+}

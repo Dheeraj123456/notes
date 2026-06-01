@@ -1,0 +1,6 @@
+{
+  "id": "data-structures",
+  "name": "Data Structures",
+  "description": "Arrays, linked lists, trees, graphs, hash tables",
+  "order": 1
+}

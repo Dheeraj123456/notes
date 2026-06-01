@@ -1,0 +1,225 @@
+---
+title: Rayon
+description: Data parallelism with work-stealing scheduler, parallel iterators, join/fork, reduce
+---
+
+# Rayon: Data Parallelism with Work-Stealing Under the Hood
+
+## Overview
+
+Rayon provides **data-parallel** abstractions using a **work-stealing scheduler**. Unlike Tokio (task-parallel, async), Rayon targets **CPU-bound parallel computations** with declarative API that parallelizes iterators automatically.
+
+---
+
+## 1. Parallelism vs Concurrency
+
+### Parallelism (Rayon)
+
+```rust
+use rayon::prelude::*;
+
+let sum: i32 = (1..1000)
+    .into_par_iter()
+    .map(|x| x * x)
+    .sum();
+```
+
+**Characteristics:**
+- Multiple threads execute **simultaneously**
+- Work on **independent data**
+- **CPU-bound** (compute-intensive)
+
+### Concurrency (Tokio)
+
+**Characteristics:**
+- Single or few threads **interleave** work
+- **I/O-bound** (I/O-intensive)
+
+---
+
+## 2. Rayon Work-Stealing Scheduler
+
+### Thread Pool
+
+```rust
+use rayon::prelude::*;
+
+let pool = rayon::ThreadPoolBuilder::new()
+    .num_threads(4)
+    .build()
+    .unwrap();
+
+pool.install(|| {
+    (0..100).into_par_iter().for_each(|i| println!("{}", i));
+});
+```
+
+### Work-Stealing Queue Structure
+
+```plantuml
+@startuml
+rectangle "Rayon Work-Stealing Scheduler" {
+    rectangle "Thread 0" {
+        rectangle "Local deque\n[work] [work] [work]" #E8F4F8
+    }
+    rectangle "Thread 1" {
+        rectangle "Local deque\n[work]" #D4E8F0
+    }
+    rectangle "Thread 2" {
+        rectangle "Local deque" #C0D8E8
+    }
+    rectangle "Thread 3" {
+        rectangle "Local deque\n[work] [work]" #B8D0E0
+    }
+}
+note right : Idle threads steal tasks from busy threads\nMinimizes load imbalance
+@enduml
+```
+
+---
+
+## 3. Iterator Parallelization
+
+```rust
+use rayon::prelude::*;
+
+// Sequential
+let result: Vec<i32> = (0..1000).iter().map(|x| x * 2).collect();
+
+// Parallel
+let result: Vec<i32> = (0..1000).into_par_iter().map(|x| x * 2).collect();
+```
+
+### Work Division
+
+```
+Iteration 0-249:   Thread 0
+Iteration 250-499: Thread 1
+Iteration 500-749: Thread 2
+Iteration 750-999: Thread 3
+```
+
+### Dynamic Load Balancing
+
+```
+If Thread 0 finishes early:
+  Thread 0: [] ← Idle → steals work from Thread 1
+```
+
+---
+
+## 4. Join and Fork
+
+```rust
+use rayon::prelude::*;
+
+let (left, right) = rayon::join(
+    || expensive_left_computation(),
+    || expensive_right_computation()
+);
+// left and right computed in parallel
+```
+
+### Divide and Conquer: Merge Sort
+
+```rust
+fn merge_sort(v: &mut [i32]) {
+    if v.len() <= 1000 {
+        v.sort();
+    } else {
+        let mid = v.len() / 2;
+        rayon::join(
+            || merge_sort(&mut v[..mid]),
+            || merge_sort(&mut v[mid..])
+        );
+    }
+}
+```
+
+---
+
+## 5. Reduction and Combine
+
+```rust
+use rayon::prelude::*;
+
+let sum: i32 = (1..1000)
+    .into_par_iter()
+    .reduce(|| 0, |a, b| a + b);
+```
+
+```plantuml
+@startuml
+state "Leaf nodes" as leaf: Threads compute partial sums\n[1,2,3,4], [5,6,7,8], ...
+state "Level 1 combine" as l1: 10+26=36, 19+23=42
+state "Level 2 combine" as l2: 36+42=78
+
+leaf --> l1: Combine pairs
+l1 --> l2: Combine results
+l2 --> [*]: Final result
+@enduml
+```
+
+---
+
+## 6. Rayon vs Tokio
+
+| Aspect | Rayon | Tokio |
+|--------|-------|-------|
+| **Best for** | CPU-bound parallelism | I/O-bound concurrency |
+| **Scheduling** | Work-stealing | Event-driven |
+| **Threads** | One per CPU core | Configurable |
+| **Blocking** | Allowed (efficient) | Problematic (starves executor) |
+| **Scalability** | O(cores) | O(tasks) |
+
+---
+
+## 7. Performance Characteristics
+
+```
+Parallel sum of 1 million numbers:
+  Seq:   1000 ms
+  Par:   250 ms (4 threads)
+  Speedup: 4× (near-linear!)
+
+Parallel send over channel:
+  Seq:   100 ns
+  Par:   10 μs (contention!)
+  Slowdown: 100×
+```
+
+---
+
+## 8. Decision Tree
+
+```plantuml
+@startuml
+state "Work is parallelizable?" as par
+state "Yes" as yes
+state "No" as no
+state "Each task > 10 μs?" as size
+state "Large" as large
+state "Small" as small
+
+par --> yes: Independent data
+par --> no: Sequential
+yes --> size: Estimate work per task
+size --> large: Use Rayon!
+size --> small: Sequential (overhead > benefit)
+@enduml
+```
+
+---
+
+## Summary
+
+| Aspect | Rayon | Tokio |
+|--------|-------|-------|
+| **Best for** | CPU-bound parallelism | I/O-bound concurrency |
+| **Scheduling** | Work-stealing | Event-driven |
+| **Threads** | One per CPU core | Configurable |
+| **Blocking** | Allowed (efficient) | Problematic (starves executor) |
+
+---
+
+**Next:** [[cs/rust/19-tokio|Tokio]] — Learn event-driven I/O architecture
