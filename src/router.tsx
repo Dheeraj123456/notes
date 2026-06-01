@@ -6,6 +6,8 @@ function Layout({ children }: { children: React.ReactNode }) {
   return <AppShell>{children}</AppShell>
 }
 
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
+
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -41,4 +43,4 @@ export const router = createBrowserRouter([
       Component: function NotFoundRoute() { return <Layout><m.NotFoundPage /></Layout> },
     })),
   },
-])
+], { basename })
