@@ -1,0 +1,46 @@
+
+# The First Law of Thermodynamics in Molecular Dynamics (MD)
+
+In Molecular Dynamics (MD), the **First Law of Thermodynamics** dictates that the total energy of an isolated, conservative system is conserved. Energy is neither created nor destroyed, only transferred.
+
+---
+
+## The Core Equation
+
+For a closed thermodynamic system, the change in internal energy ($\Delta U$) is the difference between heat added ($Q$) and work done ($W$):
+
+$$ \Delta U = Q - W $$
+
+---
+
+## How the First Law Operates in MD
+
+MD simulations utilize Newtonian mechanics to model atomic interactions. In an isolated system, energy continuously fluctuates between kinetic and potential forms, but the total energy remains constant:
+
+$$E_{\text{total}} = K + V = \text{constant}$$
+
+### Energy Components:
+*   **Kinetic Energy ($K$):** Represents the motion of the atoms.
+    $$ K = \frac{1}{2} \sum_{i=1}^{N} m_i v_i^2 $$
+*   **Potential Energy ($V$):** Represents interatomic forces and interactions (e.g., chemical bonds, van der Waals forces, electrostatic interactions).
+
+---
+
+## System Ensembles & Temperature Control
+
+To match real-world thermodynamic conditions, MD simulations use statistical mechanics "ensembles." These ensembles modify how the First Law is managed:
+
+*   **NVE Ensemble (Microcanonical):** 
+    *   Represents a completely isolated system.
+    *   The number of particles ($N$), volume ($V$), and total energy ($E$) remain constant.
+*   **NVT Ensemble (Canonical):** 
+    *   The system connects to an external heat bath.
+    *   Temperature ($T$) is held constant via a thermostat (e.g., Nosé-Hoover).
+    *   Heat is exchanged with the surroundings, causing $E_{\text{total}}$ to fluctuate while the average temperature remains fixed.
+*   **NPT Ensemble (Isothermal-Isobaric):** 
+    *   Maintains constant temperature ($T$) and pressure ($P$).
+    *   The simulation box volume fluctuates, explicitly accounting for the work ($W$) done by or on the system.
+
+---
+
+
