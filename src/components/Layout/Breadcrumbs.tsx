@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { getAllBranches, getCoursesForBranch } from '../../data/content-index'
 
 const labelCache = new Map<string, string>()
@@ -59,8 +59,8 @@ export function Breadcrumbs() {
             <span style={{ margin: '0 0.3em', color: 'var(--text-muted)', flexShrink: 0 }}>/</span>
           )}
           {i < crumbs.length - 1 ? (
-            <a
-              href={crumb.path}
+            <Link
+              to={crumb.path}
               style={{
                 color: 'var(--link)',
                 textDecoration: 'none',
@@ -71,7 +71,7 @@ export function Breadcrumbs() {
               }}
             >
               {crumb.label}
-            </a>
+            </Link>
           ) : (
             <span
               style={{

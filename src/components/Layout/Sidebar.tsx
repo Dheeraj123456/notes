@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { getAllBranches, getCoursesForBranch } from '../../data/content-index'
 
 interface SidebarProps {
@@ -103,8 +104,8 @@ function SidebarItem({
   onClick?: () => void
 }) {
   return (
-    <a
-      href={href}
+    <Link
+      to={href || '#'}
       onClick={onClick}
       style={{
         display: 'block',
@@ -126,7 +127,7 @@ function SidebarItem({
       }}
     >
       {label}
-    </a>
+    </Link>
   )
 }
 

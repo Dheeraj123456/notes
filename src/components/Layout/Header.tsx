@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ThemeToggle } from '../Theme/ThemeToggle'
 import { SearchModal } from '../Search/SearchModal'
 
@@ -47,8 +48,8 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           >
             ☰
           </button>
-          <a
-            href="/"
+          <Link
+            to="/"
             style={{
               fontWeight: 700,
               fontSize: 'clamp(0.95rem, 3vw, 1.125rem)',
@@ -60,7 +61,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
             }}
           >
             Engineering Notes
-          </a>
+          </Link>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
