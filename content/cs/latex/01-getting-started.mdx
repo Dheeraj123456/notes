@@ -1,0 +1,33 @@
+---
+title: Getting Started with LaTeX
+description: Introduction to LaTeX and KaTeX — document structure, inline math, display math, and basic examples
+---
+
+# Getting Started with LaTeX
+
+LaTeX is a TeX-based typesetting system for producing scientific, mathematical, and physical documents. [KaTeX](https://katex.org/) is a fast math renderer for the web that supports a subset of LaTeX.
+
+## Example
+
+$$
+f\relax(x) = \int_{-\infty}^\infty f\hat\xi\,e^{2 \pi i \xi x}\,d\xi
+$$
+
+```latex
+f\relax(x) = \int_{-\infty}^\infty
+    f\hat\xi\,e^{2 \pi i \xi x}
+    \,d\xi
+```
+
+## Inline Math
+
+Inline math is rendered within text: $\int_0^\infty x^2 dx$
+
+```markdown
+$\int_0^\infty x^2 dx$
+```
+
+---
+
+[← Back to Index](/cs/latex/)  
+[Next → Accents and Emphasis](/cs/latex/02-accents/)

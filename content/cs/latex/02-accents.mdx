@@ -1,0 +1,51 @@
+---
+title: Accents and Emphasis
+description: Accents, text emphasis, and delimiter sizing in LaTeX
+---
+
+# Accents and Emphasis
+
+## Accents
+
+| Render | Code | Render | Code |
+|--------|------|--------|------|
+| $a'$ | `a'` | $\tilde{a}$ | `\tilde{a}` |
+| $\mathring{g}$ | `\mathring{g}` | $a''$ | `a''` |
+| $\widetilde{ac}$ | `\widetilde{ac}` | $\overgroup{AB}$ | `\overgroup{AB}` |
+| $a^{\prime}$ | `a^{\prime}` | $\utilde{AB}$ | `\utilde{AB}` |
+| $\undergroup{AB}$ | `\undergroup{AB}` | $\acute{a}$ | `\acute{a}` |
+| $\vec{F}$ | `\vec{F}` | $\overrightarrow{AB}$ | `\overrightarrow{AB}` |
+| $\bar{y}$ | `\bar{y}` | $\overleftarrow{AB}$ | `\overleftarrow{AB}` |
+| $\breve{a}$ | `\breve{a}` | $\underleftarrow{AB}$ | `\underleftarrow{AB}` |
+| $\check{a}$ | `\check{a}` | $\overleftharpoon{ac}$ | `\overleftharpoon{ac}` |
+| $\dot{a}$ | `\dot{a}` | $\overleftrightarrow{AB}$ | `\overleftrightarrow{AB}` |
+| $\ddot{a}$ | `\ddot{a}` | $\underleftrightarrow{AB}$ | `\underleftrightarrow{AB}` |
+| $\grave{a}$ | `\grave{a}` | $\overline{AB}$ | `\overline{AB}` |
+| $\hat{\theta}$ | `\hat{\theta}` | $\underline{AB}$ | `\underline{AB}` |
+| $\widehat{ac}$ | `\widehat{ac}` | $\widecheck{ac}$ | `\widecheck{ac}` |
+| $\underbar{X}$ | `\underbar{X}` | $\overbrace{AB}$ | `\overbrace{AB}` |
+| $\underbrace{AB}$ | `\underbrace{AB}` | $\overlinesegment{AB}$ | `\overlinesegment{AB}` |
+| $\underlinesegment{AB}$ | `\underlinesegment{AB}` | $\overrightharpoon{ac}$ | `\overrightharpoon{ac}` |
+
+## Delimiter Sizing
+
+$$
+\left(\LARGE{AB}\right) \quad ( \big( \Big( \bigg( \Bigg(
+$$
+
+```latex
+\left(\LARGE{AB}\right)
+( \big( \Big( \bigg( \Bigg(
+```
+
+| Small | Medium | Large | Extra Large |
+|-------|--------|-------|-------------|
+| `\big` | `\Big` | `\bigg` | `\Bigg` |
+| `\bigl` | `\Bigl` | `\biggl` | `\Biggl` |
+| `\bigm` | `\Bigm` | `\biggm` | `\Biggm` |
+| `\bigr` | `\Bigr` | `\biggr` | `\Biggr` |
+
+---
+
+[← Back: Getting Started](/cs/latex/01-getting-started/)  
+[Next → Greek and Hebrew Letters](/cs/latex/03-greek-letters/)

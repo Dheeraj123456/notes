@@ -1,0 +1,63 @@
+---
+title: Delimiters
+description: Parentheses, brackets, braces, absolute values, and other delimiters in LaTeX
+---
+
+# Delimiters
+
+## Common Delimiters
+
+| Render | Code | Render | Code |
+|--------|------|--------|------|
+| $()$ | `()` | $\lbrack \rbrack$ | `\lbrack \rbrack` |
+| $\{\}$ | `\{\}` | $\langle \rangle$ | `\langle \rangle` |
+| $\vert$ | `\vert` | $\Vert$ | `\Vert` |
+| $\lceil \rceil$ | `\lceil \rceil` | $\lfloor \rfloor$ | `\lfloor \rfloor$ |
+| $\ulcorner \urcorner$ | `\ulcorner \urcorner$ | $\llcorner \lrcorner$ | `\llcorner \lrcorner$ |
+
+## Variable-sized Delimiters
+
+| Render | Code | Render | Code |
+|--------|------|--------|------|
+| $\uparrow$ | `\uparrow$ | $\Uparrow$ | `\Uparrow` |
+| $\downarrow$ | `\downarrow$ | $\Downarrow$ | `\Downarrow` |
+| $\updownarrow$ | `\updownarrow$ | $\Updownarrow$ | `\Updownarrow` |
+
+## Paired Delimiters
+
+Use `\left` and `\right` to match delimiter height to content:
+
+$$
+\left\{ \sum_{n=1}^\infty \frac{1}{n^2} \right\}
+$$
+
+```latex
+\left\{ \sum_{n=1}^\infty \frac{1}{n^2} \right\}
+```
+
+For invisible delimiters, use `\left.` or `\right.`:
+
+$$
+\left. \frac{dy}{dx} \right|_{x=0}
+$$
+
+```latex
+\left. \frac{dy}{dx} \right|_{x=0}
+```
+
+## Math Constructs
+
+| Render | Code |
+|--------|------|
+| $\frac{abc}{xyz}$ | `\frac{abc}{xyz}$ |
+| $\sqrt{abc}$ | `\sqrt{abc}` |
+| $\sqrt[n]{abc}$ | `\sqrt[n]{abc}$ |
+| $\overline{abc}$ | `\overline{abc}$ |
+| $\underline{abc}$ | `\underline{abc}$ |
+| $\overrightarrow{abc}$ | `\overrightarrow{abc}$ |
+| $\overleftarrow{abc}$ | `\overleftarrow{abc}$ |
+
+---
+
+[← Back: Annotation and Layout](/cs/latex/04-annotation-layout/)  
+[Next → Variable Size Symbols](/cs/latex/06-variable-symbols/)

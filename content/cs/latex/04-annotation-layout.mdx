@@ -1,0 +1,61 @@
+---
+title: Annotation and Layout
+description: Cancelling, over/under braces, vertical layout, overlap, and spacing in LaTeX
+---
+
+# Annotation and Layout
+
+## Annotation
+
+| Render | Code |
+|--------|------|
+| $\cancel{5}$ | `\cancel{5}` |
+| $\bcancel{5}$ | `\bcancel{5}` |
+| $\xcancel{ABC}$ | `\xcancel{ABC}` |
+| $\sout{abc}$ | `\sout{abc}` |
+| $\boxed{\pi=\frac c d}$ | `\boxed{\pi=\frac c d}` |
+| $\overbrace{a+b+c}^{\text{note}}$ | `\overbrace{a+b+c}^{\text{note}}` |
+| $\underbrace{a+b+c}_{\text{note}}$ | `\underbrace{a+b+c}_{\text{note}}` |
+| $\not =$ | `\not =` |
+
+## Vertical Layout
+
+| Render | Code |
+|--------|------|
+| $x_n$ | `x_n` |
+| $e^x$ | `e^x` |
+| $_u^o$ | `_u^o` |
+| $\stackrel{!}{=}$ | `\stackrel{!}{=}` |
+| $\overset{!}{=}$ | `\overset{!}{=}` |
+| $\underset{!}{=}$ | `\underset{!}{=}` |
+| $a \atop b$ | `a \atop b` |
+
+$$
+\sum_{\substack{0<i<m\\0<j<n}}
+$$
+
+```latex
+\sum_{\substack{0<i<m\\0<j<n}}
+```
+
+## Overlap and Spacing
+
+| Render | Code |
+|--------|------|
+| ${=}\mathllap{/\,}$ | `{=}\mathllap{/\,}` |
+| $\mathrlap{\,/}{=}$ | `\mathrlap{\,/}{=}` |
+| $\left(x^{\smash{2}}\right)$ | `\left(x^{\smash{2}}\right)` |
+| $\sqrt{\smash[b]{y}}$ | `\sqrt{\smash[b]{y}}` |
+
+$$
+\sum_{\mathclap{1\le i\le j\le n}} x_{ij}
+$$
+
+```latex
+\sum_{\mathclap{1\le i\le j\le n}} x_{ij}
+```
+
+---
+
+[← Back: Greek and Hebrew Letters](/cs/latex/03-greek-letters/)  
+[Next → Delimiters](/cs/latex/05-delimiters/)
