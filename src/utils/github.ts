@@ -65,6 +65,20 @@ export async function testConnection(config: GitHubConfig): Promise<{ ok: boolea
   }
 }
 
+function base64ToUtf8(b64: string): string {
+  const binary = atob(b64.replace(/\n/g, ''))
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return new TextDecoder().decode(bytes)
+}
+
+function utf8ToBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return btoa(binary)
+}
+
 export async function getGitHubFile(
   path: string,
 ): Promise<{ content: string; sha: string } | null> {
@@ -75,8 +89,7 @@ export async function getGitHubFile(
   if (!res.ok) return null
 
   const data = (await res.json()) as GitHubContent
-  const decoded = atob(data.content.replace(/\n/g, ''))
-  return { content: decoded, sha: data.sha }
+  return { content: base64ToUtf8(data.content), sha: data.sha }
 }
 
 export async function saveGitHubFile(
@@ -90,7 +103,7 @@ export async function saveGitHubFile(
 
   const body: Record<string, string> = {
     message,
-    content: btoa(content),
+    content: utf8ToBase64(content),
     branch: config.branch,
   }
   if (sha) body.sha = sha
