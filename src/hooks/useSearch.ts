@@ -29,10 +29,11 @@ function stripMarkdown(text: string): string {
     .trim()
 }
 
-const rawModules = import.meta.glob<string>('/content/**/*.{md,mdx}', {
+const rawModules = import.meta.glob('/content/**/*.{md,mdx}', {
   eager: true,
-  as: 'raw',
-})
+  query: '?raw',
+  import: 'default',
+}) as Record<string, string>
 
 function extractTitleFromBody(body: string): string {
   const match = body.match(/^#\s+(.+)/m)
