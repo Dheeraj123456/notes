@@ -88,7 +88,7 @@ export function MarkdownRenderer({ slug }: MarkdownRendererProps) {
           }}
         >
           <Content />
-          <MermaidRenderer />
+          <MermaidRenderer key={slug} />
         </div>
       </MDXProvider>
     </Suspense>

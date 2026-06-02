@@ -1,16 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import mermaid from 'mermaid'
 
 function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
-export function MermaidRenderer() {
-  const initialized = useRef(false)
+let mermaidInit = false
 
+export function MermaidRenderer() {
   useEffect(() => {
-    if (!initialized.current) {
-      initialized.current = true
+    if (!mermaidInit) {
+      mermaidInit = true
       mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
@@ -39,7 +39,7 @@ export function MermaidRenderer() {
 
     const timer = setTimeout(run, 100)
     return () => clearTimeout(timer)
-  }, [])
+  })
 
   return null
 }
