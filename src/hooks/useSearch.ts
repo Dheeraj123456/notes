@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import MiniSearch from 'minisearch'
+import matter from 'gray-matter'
 
 export type SearchScope = 'all' | 'branch' | 'course'
 
@@ -16,32 +17,6 @@ interface SearchDoc {
 let searchInstance: MiniSearch<SearchDoc> | null = null
 let searchDocs: SearchDoc[] = []
 
-function getRawContentModules(): Record<string, string> {
-  const mods = import.meta.glob<{
-    default: unknown
-    frontmatter?: Record<string, string>
-  }>('/content/**/*.{md,mdx}', { eager: true })
-
-  const result: Record<string, string> = {}
-  for (const [path, mod] of Object.entries(mods)) {
-    const slug = path
-      .replace('/content/', '')
-      .replace(/\.(md|mdx)$/, '')
-      .replace(/\/index$/, '')
-    if (slug.endsWith('/_branch_') || slug.endsWith('/_course_')) continue
-
-    const fm = mod?.frontmatter
-    const title = (fm && typeof fm === 'object' ? (fm as Record<string, string>).title : '') || ''
-    const description = (fm && typeof fm === 'object' ? (fm as Record<string, string>).description : '') || ''
-    result[path] = `---\ntitle: ${title}\ndescription: ${description}\n---\n`
-  }
-  return result
-}
-
-function stripFrontmatter(text: string): string {
-  return text.replace(/^---[\s\S]*?---\n*/, '')
-}
-
 function stripMarkdown(text: string): string {
   return text
     .replace(/^###?\s+/gm, '')
@@ -54,18 +29,14 @@ function stripMarkdown(text: string): string {
     .trim()
 }
 
-function extractTitle(raw: string): string {
-  const titleMatch = raw.match(/^---[\s\S]*?title:\s*(.+?)[\s\S]*?---/)
-  if (titleMatch) return titleMatch[1].replace(/["']/g, '').trim()
-  const headingMatch = raw.match(/^#\s+(.+)/m)
-  if (headingMatch) return headingMatch[1].trim()
-  return ''
-}
+const rawModules = import.meta.glob<string>('/content/**/*.{md,mdx}', {
+  eager: true,
+  as: 'raw',
+})
 
-function extractDescription(raw: string): string {
-  const descMatch = raw.match(/^---[\s\S]*?description:\s*(.+?)[\s\S]*?---/)
-  if (descMatch) return descMatch[1].replace(/["']/g, '').trim()
-  return ''
+function extractTitleFromBody(body: string): string {
+  const match = body.match(/^#\s+(.+)/m)
+  return match ? match[1].trim() : ''
 }
 
 function buildSearchIndex(): { miniSearch: MiniSearch<SearchDoc>; docs: SearchDoc[] } {
@@ -73,7 +44,6 @@ function buildSearchIndex(): { miniSearch: MiniSearch<SearchDoc>; docs: SearchDo
     return { miniSearch: searchInstance, docs: searchDocs }
   }
 
-  const rawModules = getRawContentModules()
   const docs: SearchDoc[] = []
 
   for (const [filepath, raw] of Object.entries(rawModules)) {
@@ -88,22 +58,20 @@ function buildSearchIndex(): { miniSearch: MiniSearch<SearchDoc>; docs: SearchDo
     const branchId = parts[0]
     const courseId = parts[1] ?? ''
 
-    const stripped = stripFrontmatter(raw)
-    const text = stripMarkdown(stripped)
-    const title = extractTitle(raw)
-    const description = extractDescription(raw)
+    const parsed = matter(raw)
+    const title = parsed.data.title || extractTitleFromBody(parsed.content) || slug.split('/').pop() || ''
+    const description = parsed.data.description || ''
+    const text = stripMarkdown(parsed.content).slice(0, 3000)
 
-    if (title) {
-      docs.push({
-        id: slug,
-        title,
-        description,
-        text: text.slice(0, 3000),
-        branchId,
-        courseId,
-        path: `/${slug}`,
-      })
-    }
+    docs.push({
+      id: slug,
+      title,
+      description,
+      text,
+      branchId,
+      courseId,
+      path: `/${slug}`,
+    })
   }
 
   const miniSearch = new MiniSearch<SearchDoc>({
