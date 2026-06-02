@@ -1,0 +1,116 @@
+---
+title: Bash Loops
+description: For, while, and until loops in bash — ranges, break, continue, reading files, and infinite loops
+---
+
+# Bash Loops
+
+## Basic For Loop
+
+```bash
+for i in /etc/rc.*; do
+    echo $i
+done
+```
+
+## C-Like For Loop
+
+```bash
+for ((i = 0 ; i < 100 ; i++)); do
+    echo $i
+done
+```
+
+## Ranges
+
+```bash
+for i in {1..5}; do
+    echo "Welcome $i"
+done
+```
+
+### With Step Size
+
+```bash
+for i in {5..50..5}; do
+    echo "Welcome $i"
+done
+```
+
+## While Loops
+
+### Auto Increment
+
+```bash
+i=1
+while [[ $i -lt 4 ]]; do
+    echo "Number: $i"
+    ((i++))
+done
+```
+
+### Auto Decrement
+
+```bash
+i=3
+while [[ $i -gt 0 ]]; do
+    echo "Number: $i"
+    ((i--))
+done
+```
+
+## Continue
+
+```bash
+for number in $(seq 1 3); do
+    if [[ $number == 2 ]]; then
+        continue;
+    fi
+    echo "$number"
+done
+```
+
+## Break
+
+```bash
+for number in $(seq 1 3); do
+    if [[ $number == 2 ]]; then
+        break;
+    fi
+    echo "$number"
+done
+```
+
+## Until
+
+```bash
+count=0
+until [ $count -gt 10 ]; do
+    echo "$count"
+    ((count++))
+done
+```
+
+## Forever
+
+```bash
+while true; do
+    # here is some code.
+done
+```
+
+### Shorthand
+
+```bash
+while :; do
+    # here is some code.
+done
+```
+
+## Reading Lines
+
+```bash
+cat file.txt | while read line; do
+    echo $line
+done
+```

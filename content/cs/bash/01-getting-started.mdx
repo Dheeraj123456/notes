@@ -1,0 +1,105 @@
+---
+title: Getting Started with Bash
+description: Writing and executing bash scripts, variables, arguments, functions, conditionals, and brace expansion
+---
+
+# Getting Started with Bash
+
+## hello.sh
+
+```bash
+#!/bin/bash
+
+VAR="world"
+echo "Hello $VAR!"   # => Hello world!
+```
+
+Execute the script:
+
+```bash
+$ bash hello.sh
+```
+
+## Variables
+
+```bash
+NAME="John"
+
+echo ${NAME}    # => John
+echo $NAME      # => John
+echo "$NAME"    # => John
+echo '$NAME'    # => $NAME (exact string, no expansion)
+echo "${NAME}!" # => John!
+
+NAME = "John"   # => Error — no spaces around =
+```
+
+## Comments
+
+```bash
+# This is an inline Bash comment.
+```
+
+```bash
+: '
+This is a
+very neat comment
+in bash
+'
+```
+
+Multi-line comments use `:'` to open and `'` to close.
+
+## Arguments
+
+| Expression  | Description |
+|-------------|-------------|
+| `$1` … `$9` | Parameter 1 ... 9 |
+| `$0`        | Name of the script itself |
+| `$#`        | Number of arguments |
+| `$$`        | Process id of the shell |
+| `$*`        | All arguments |
+| `$@`        | All arguments, starting from first |
+| `$_`        | Last argument of the previous command |
+
+## Functions
+
+```bash
+get_name() {
+    echo "John"
+}
+
+echo "You are $(get_name)"
+```
+
+## Conditionals
+
+```bash
+if [[ -z "$string" ]]; then
+    echo "String is empty"
+elif [[ -n "$string" ]]; then
+    echo "String is not empty"
+fi
+```
+
+## Brace Expansion
+
+| Expression   | Description |
+|--------------|-------------|
+| `{A,B}`      | Same as `A B` |
+| `{A,B}.js`   | Same as `A.js B.js` |
+| `{1..5}`     | Same as `1 2 3 4 5` |
+
+```bash
+echo {A,B}.js
+```
+
+## Shell Execution
+
+```bash
+# => I'm in /path/of/current
+echo "I'm in $(PWD)"
+
+# Same as:
+echo "I'm in `pwd`"
+```

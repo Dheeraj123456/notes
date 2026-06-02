@@ -1,0 +1,147 @@
+---
+title: Bash Miscellaneous
+description: Arithmetic, redirection, heredoc, printf, case/switch, trap, and other useful bash features
+---
+
+# Bash Miscellaneous
+
+## Numeric Calculations
+
+```bash
+$((a + 200))      # Add 200 to $a
+```
+
+```bash
+$(($RANDOM%200))  # Random number 0..199
+```
+
+## Subshells
+
+```bash
+(cd somedir; echo "I'm now in $PWD")
+pwd # still in first directory
+```
+
+## Redirection
+
+```bash
+python hello.py > output.txt    # stdout to file
+python hello.py >> output.txt   # stdout to file, append
+python hello.py 2> error.log    # stderr to file
+python hello.py 2>&1            # stderr to stdout
+python hello.py 2>/dev/null     # stderr to null
+python hello.py &>/dev/null     # stdout and stderr to null
+python hello.py < foo.txt       # feed foo.txt to stdin
+```
+
+## Heredoc
+
+```bash
+cat <<END
+hello world
+END
+```
+
+## Case / Switch
+
+```bash
+case "$1" in
+    start | up)
+    vagrant up
+    ;;
+
+    *)
+    echo "Usage: $0 {start|stop|ssh}"
+    ;;
+esac
+```
+
+## printf
+
+```bash
+printf "Hello %s, I'm %s" Sven Olga
+# => "Hello Sven, I'm Olga"
+
+printf "1 + 1 = %d" 2
+# => "1 + 1 = 2"
+
+printf "Print a float: %f" 2
+# => "Print a float: 2.000000"
+```
+
+## Trap Errors
+
+```bash
+trap 'echo Error at about $LINENO' ERR
+```
+
+```bash
+traperr() {
+    echo "ERROR: ${BASH_SOURCE[1]} at about ${BASH_LINENO[0]}"
+}
+
+set -o errtrace
+trap traperr ERR
+```
+
+## Go to Previous Directory
+
+```bash
+cd -
+```
+
+## Reading Input
+
+```bash
+echo -n "Proceed? [y/n]: "
+read ans
+echo $ans
+
+read -n 1 ans    # Just one character
+```
+
+## Conditional Execution
+
+```bash
+git commit && git push
+git commit || echo "Commit failed"
+```
+
+## Source Relative
+
+```bash
+source "${0%/*}/../share/foo.sh"
+```
+
+## Directory of Script
+
+```bash
+DIR="${0%/*}"
+```
+
+## Getting Options
+
+```bash
+while [[ "$1" =~ ^- && ! "$1" == "--" ]]; do case $1 in
+    -V | --version )
+    echo $version
+    exit
+    ;;
+    -s | --string )
+    shift; string=$1
+    ;;
+    -f | --flag )
+    flag=1
+    ;;
+esac; shift; done
+if [[ "$1" == '--' ]]; then shift; fi
+```
+
+## Special Variables
+
+| Expression | Description |
+|------------|-------------|
+| `$?`       | Exit status of last task |
+| `$!`       | PID of last background task |
+| `$$`       | PID of shell |
+| `$0`       | Filename of the shell script |

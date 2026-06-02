@@ -1,0 +1,6 @@
+{
+  "id": "bash",
+  "name": "Bash Scripting",
+  "description": "Bash shell scripting — variables, conditionals, loops, arrays, functions, and parameter expansions",
+  "order": 4
+}

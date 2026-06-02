@@ -1,0 +1,55 @@
+---
+title: Bash Functions
+description: Defining, calling, and returning values from functions in bash
+---
+
+# Bash Functions
+
+## Defining Functions
+
+```bash
+myfunc() {
+    echo "hello $1"
+}
+```
+
+Same function with `function` keyword:
+
+```bash
+function myfunc() {
+    echo "hello $1"
+}
+```
+
+```bash
+myfunc "John"
+```
+
+## Returning Values
+
+```bash
+myfunc() {
+    local myresult='some value'
+    echo $myresult
+}
+```
+
+```bash
+result="$(myfunc)"
+```
+
+## Raising Errors
+
+```bash
+myfunc() {
+    return 1
+}
+```
+
+```bash
+if myfunc; then
+    echo "success"
+else
+    echo "failure"
+fi
+```

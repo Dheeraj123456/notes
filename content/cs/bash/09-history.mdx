@@ -1,0 +1,44 @@
+---
+title: Bash History
+description: Expanding and re-running commands from bash history — !! , !$ , !* , and slices
+---
+
+# Bash History
+
+## Commands
+
+| Command          | Description |
+|------------------|-------------|
+| `history`        | Show history |
+| `sudo !!`        | Run the previous command with sudo |
+| `shopt -s histverify` | Don't execute expanded result immediately |
+
+## Expansions
+
+| Expression | Description |
+|------------|-------------|
+| `!$`       | Last parameter of most recent command |
+| `!*`       | All parameters of most recent command |
+| `!-n`      | Expand `n`th most recent command |
+| `!n`       | Expand `n`th command in history |
+| `!<cmd>`   | Expand most recent invocation of `<cmd>` |
+
+## Operations
+
+| Code                     | Description |
+|--------------------------|-------------|
+| `!!`                     | Execute last command again |
+| `!!:s/<FROM>/<TO>/`      | Replace first occurrence in most recent command |
+| `!!:gs/<FROM>/<TO>/`     | Replace all occurrences in most recent command |
+| `!$:t`                   | Expand basename from last parameter |
+| `!$:h`                   | Expand directory from last parameter |
+
+## Slices
+
+| Code       | Description |
+|------------|-------------|
+| `!!:n`     | Expand only `n`th token (command is 0) |
+| `!^`       | Expand first argument |
+| `!$`       | Expand last token |
+| `!!:n-m`   | Expand range of tokens |
+| `!!:n-$`   | Expand `n`th token to last |

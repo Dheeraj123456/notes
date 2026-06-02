@@ -1,0 +1,116 @@
+---
+title: Bash Conditionals
+description: Integer, string, and file conditionals in bash — if/elif/else, test expressions, and logical operators
+---
+
+# Bash Conditionals
+
+## Integer Conditions
+
+| Condition             | Description           |
+|-----------------------|-----------------------|
+| `[[ NUM -eq NUM ]]`   | Equal                 |
+| `[[ NUM -ne NUM ]]`   | Not equal             |
+| `[[ NUM -lt NUM ]]`   | Less than             |
+| `[[ NUM -le NUM ]]`   | Less than or equal    |
+| `[[ NUM -gt NUM ]]`   | Greater than          |
+| `[[ NUM -ge NUM ]]`   | Greater than or equal |
+| `(( NUM < NUM ))`     | Less than             |
+| `(( NUM <= NUM ))`    | Less than or equal    |
+| `(( NUM > NUM ))`     | Greater than          |
+| `(( NUM >= NUM ))`    | Greater than or equal |
+
+## String Conditions
+
+| Condition          | Description          |
+|--------------------|----------------------|
+| `[[ -z STR ]]`     | Empty string         |
+| `[[ -n STR ]]`     | Not empty string     |
+| `[[ STR == STR ]]` | Equal                |
+| `[[ STR != STR ]]` | Not Equal            |
+| `[[ STR =~ STR ]]` | Regexp               |
+
+## Examples
+
+### String
+
+```bash
+if [[ -z "$string" ]]; then
+    echo "String is empty"
+elif [[ -n "$string" ]]; then
+    echo "String is not empty"
+else
+    echo "This never happens"
+fi
+```
+
+### Equal
+
+```bash
+if [[ "$A" == "$B" ]]; then
+    ...
+fi
+```
+
+### Regex
+
+```bash
+if [[ '1. abc' =~ ([a-z]+) ]]; then
+    echo ${BASH_REMATCH[1]}
+fi
+```
+
+### Numeric
+
+```bash
+if (( $a < $b )); then
+   echo "$a is smaller than $b"
+fi
+```
+
+### File Exists
+
+```bash
+if [[ -e "file.txt" ]]; then
+    echo "file exists"
+fi
+```
+
+## File Conditions
+
+| Condition       | Description          |
+|-----------------|----------------------|
+| `[[ -e FILE ]]` | Exists               |
+| `[[ -d FILE ]]` | Directory            |
+| `[[ -f FILE ]]` | File                 |
+| `[[ -h FILE ]]` | Symlink              |
+| `[[ -s FILE ]]` | Size is > 0 bytes    |
+| `[[ -r FILE ]]` | Readable             |
+| `[[ -w FILE ]]` | Writable             |
+| `[[ -x FILE ]]` | Executable           |
+
+## Logical AND / OR
+
+```bash
+if [[ X && Y ]]; then
+    ...
+fi
+```
+
+```bash
+if [[ X || Y ]]; then
+    ...
+fi
+```
+
+### Legacy syntax
+
+```bash
+if [ "$1" = 'y' -a $2 -gt 0 ]; then
+    echo "yes"
+fi
+
+if [ "$1" = 'n' -o $2 -lt 0 ]; then
+    echo "no"
+fi
+```
