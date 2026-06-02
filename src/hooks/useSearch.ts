@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import MiniSearch from 'minisearch'
-import matter from 'gray-matter'
 
 export type SearchScope = 'all' | 'branch' | 'course'
 
@@ -17,28 +16,14 @@ interface SearchDoc {
 let searchInstance: MiniSearch<SearchDoc> | null = null
 let searchDocs: SearchDoc[] = []
 
-function stripMarkdown(text: string): string {
-  return text
-    .replace(/^###?\s+/gm, '')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/`{1,3}[^`]*`{1,3}/g, '')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\[{2}([^\]|]+)(?:\|([^\]|]+))?\]{2}/g, '$2$1')
-    .replace(/[#*_~>`\\|]/g, '')
-    .replace(/\n{3,}/g, '\n')
-    .trim()
+interface MDXModule {
+  default: unknown
+  frontmatter?: () => Record<string, string> | undefined
 }
 
-const rawModules = import.meta.glob('/content/**/*.{md,mdx}', {
+const mdxModules = import.meta.glob<MDXModule>('/content/**/*.{md,mdx}', {
   eager: true,
-  query: '?raw',
-  import: 'default',
-}) as Record<string, string>
-
-function extractTitleFromBody(body: string): string {
-  const match = body.match(/^#\s+(.+)/m)
-  return match ? match[1].trim() : ''
-}
+})
 
 function buildSearchIndex(): { miniSearch: MiniSearch<SearchDoc>; docs: SearchDoc[] } {
   if (searchInstance && searchDocs.length > 0) {
@@ -47,7 +32,7 @@ function buildSearchIndex(): { miniSearch: MiniSearch<SearchDoc>; docs: SearchDo
 
   const docs: SearchDoc[] = []
 
-  for (const [filepath, raw] of Object.entries(rawModules)) {
+  for (const [filepath, mod] of Object.entries(mdxModules)) {
     const slug = filepath
       .replace('/content/', '')
       .replace(/\.(md|mdx)$/, '')
@@ -59,10 +44,11 @@ function buildSearchIndex(): { miniSearch: MiniSearch<SearchDoc>; docs: SearchDo
     const branchId = parts[0]
     const courseId = parts[1] ?? ''
 
-    const parsed = matter(raw)
-    const title = parsed.data.title || extractTitleFromBody(parsed.content) || slug.split('/').pop() || ''
-    const description = parsed.data.description || ''
-    const text = stripMarkdown(parsed.content).slice(0, 3000)
+    const fm = mod.frontmatter?.()
+    const title = fm?.title || parts[parts.length - 1] || ''
+    const description = fm?.description || ''
+
+    const text = `${title} ${description}`.toLowerCase()
 
     docs.push({
       id: slug,
