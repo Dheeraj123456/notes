@@ -59,6 +59,18 @@ export function AppShell({ children }: AppShellProps) {
         >
           <Breadcrumbs />
           {children}
+          <footer
+            style={{
+              marginTop: '3rem',
+              paddingTop: '1.5rem',
+              borderTop: '1px solid var(--border)',
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--text-muted)',
+              textAlign: 'center',
+            }}
+          >
+            &copy; {new Date().getFullYear()} Dheeraj Kumar Vishwakarma. All content on this site is for educational purposes.
+          </footer>
         </main>
       </div>
     </div>

@@ -44,7 +44,12 @@ function buildSearchIndex(): { miniSearch: MiniSearch<SearchDoc>; docs: SearchDo
     const branchId = parts[0]
     const courseId = parts[1] ?? ''
 
-    const fm = mod.frontmatter?.()
+    let fm: Record<string, string> | undefined
+    if (typeof mod.frontmatter === 'function') {
+      fm = mod.frontmatter()
+    } else if (mod.frontmatter && typeof mod.frontmatter === 'object') {
+      fm = mod.frontmatter as unknown as Record<string, string>
+    }
     const title = fm?.title || parts[parts.length - 1] || ''
     const description = fm?.description || ''
 
