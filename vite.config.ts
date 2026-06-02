@@ -81,8 +81,8 @@ export default defineConfig({
       remarkPlugins: [
         remarkFrontmatter,
         remarkMdxFrontmatter,
-        remarkMath,
         remarkGfm,
+        remarkMath,
         remarkWikiLink,
       ],
       rehypePlugins: [
