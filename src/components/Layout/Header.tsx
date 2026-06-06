@@ -62,6 +62,21 @@ export function Header({ onToggleSidebar }: HeaderProps) {
           >
             Engineering Notes
           </Link>
+          <Link
+            to="/workspace"
+            style={{
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--text-secondary)',
+              textDecoration: 'none',
+              padding: '0.2em 0.5em',
+              borderRadius: 'var(--radius-sm)',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+          >
+            ✏️ Workspace
+          </Link>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>

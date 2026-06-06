@@ -1,8 +1,7 @@
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { MarkdownRenderer } from '../components/Content/MarkdownRenderer'
 
 export function NotePage() {
-  const navigate = useNavigate()
   const { branch, course, note } = useParams<{ branch: string; course: string; note: string }>()
   const slug = [branch, course, note].filter(Boolean).join('/')
 
@@ -17,10 +16,14 @@ export function NotePage() {
 
   return (
     <div>
-      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-        <button
-          onClick={() => navigate(`/editor/${slug}`)}
+      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+        <a
+          href={`/workspace/${slug}`}
+          title="Open in Workspace Editor"
           style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.4em',
             padding: '0.4em 0.9em',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--border)',
@@ -29,10 +32,11 @@ export function NotePage() {
             cursor: 'pointer',
             fontFamily: 'var(--font-body)',
             fontSize: 'var(--font-size-sm)',
+            textDecoration: 'none',
           }}
         >
-          Edit
-        </button>
+          ✏ Edit
+        </a>
       </div>
       <MarkdownRenderer slug={slug} />
     </div>

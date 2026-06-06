@@ -198,6 +198,25 @@ hr {
   height: auto;
 }
 
+.svg-block {
+  text-align: center;
+  margin: 1em 0;
+  padding: 0.5em;
+  background: var(--bg-code);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.svg-block svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.svg-block svg * {
+  vector-effect: non-scaling-stroke;
+}
+
 /* ── Responsive Breakpoints ── */
 @media (max-width: 1024px) {
   :root {

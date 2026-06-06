@@ -9,6 +9,10 @@ interface Props {
   onDownload: () => void
   onCommit: () => void
   onSettings: () => void
+  onDelete?: () => void
+  onBack?: () => void
+  onDrawIo?: () => void
+  fileChanged?: boolean
 }
 
 export function EditorToolbar({
@@ -20,13 +24,16 @@ export function EditorToolbar({
   onDownload,
   onCommit,
   onSettings,
+  onDelete,
+  onBack,
+  onDrawIo,
+  fileChanged,
 }: Props) {
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         gap: '0.5rem',
         padding: '0.5rem 0.75rem',
         backgroundColor: 'var(--bg-secondary)',
@@ -34,7 +41,18 @@ export function EditorToolbar({
         flexWrap: 'wrap',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: 0 }}>
+      {onBack && (
+        <button onClick={onBack} title="Back" style={{
+          padding: '0.35em 0.6em', borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)',
+          color: 'var(--text-primary)', cursor: 'pointer',
+          fontFamily: 'var(--font-body)', fontSize: 'var(--font-size-sm)',
+          lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0,
+        }}>
+          ← Back
+        </button>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 0 }}>
         <span
           style={{
             fontSize: 'var(--font-size-sm)',
@@ -60,6 +78,19 @@ export function EditorToolbar({
             Draft
           </span>
         )}
+        {fileChanged && (
+          <span
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              color: '#e67e22',
+              backgroundColor: 'var(--tag-bg)',
+              padding: '0.15em 0.5em',
+              borderRadius: 'var(--radius-sm)',
+            }}
+          >
+            Modified
+          </span>
+        )}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -79,6 +110,16 @@ export function EditorToolbar({
         <ToolbarButton onClick={onCommit} disabled={!gitHubConfig} title={!gitHubConfig ? 'Configure GitHub first' : undefined}>
           Commit to GitHub
         </ToolbarButton>
+        {onDrawIo && (
+          <ToolbarButton onClick={onDrawIo} title="Open draw.io diagram editor">
+            draw.io
+          </ToolbarButton>
+        )}
+        {onDelete && (
+          <ToolbarButton onClick={onDelete} title="Delete file">
+            🗑
+          </ToolbarButton>
+        )}
         <ToolbarButton onClick={onSettings} title="GitHub Settings">
           ⚙
         </ToolbarButton>

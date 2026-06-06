@@ -12,6 +12,8 @@ import { createCssVariablesTheme } from 'shiki'
 import { remarkWikiLink } from './src/utils/plugins/remark-wiki-link'
 import { rehypeMermaid } from './src/utils/plugins/rehype-mermaid'
 import { rehypePlantuml } from './src/utils/plugins/rehype-plantuml'
+import { rehypeSvg } from './src/utils/plugins/rehype-svg'
+import { rehypeDiagram } from './src/utils/plugins/rehype-diagram'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -87,6 +89,8 @@ export default defineConfig({
       ],
       rehypePlugins: [
         rehypeSlug,
+        rehypeSvg,
+        rehypeDiagram,
         rehypeKatex,
         rehypeMermaid,
         rehypePlantuml,

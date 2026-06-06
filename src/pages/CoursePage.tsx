@@ -4,6 +4,98 @@ import { getBranch, getCourse, getNotesForCourse } from '../data/content-index'
 import { NewNoteModal } from '../components/Editor/NewNoteModal'
 import { listDrafts } from '../utils/local-draft'
 
+function NoteItem({ item, branchId, courseId }: { item: { slug: string; title: string; isDraft: boolean }; branchId: string; courseId: string }) {
+  const [showEdit, setShowEdit] = useState(false)
+
+  return (
+    <div
+      style={{ position: 'relative', display: 'flex', alignItems: 'stretch' }}
+      onMouseEnter={() => setShowEdit(true)}
+      onMouseLeave={() => setShowEdit(false)}
+    >
+      <Link
+        to={item.isDraft ? `/editor/${item.slug}` : `/${item.slug}`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          flex: 1,
+          padding: '0.65rem 1rem',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--card-border)',
+          backgroundColor: item.isDraft ? 'var(--tag-bg)' : 'var(--card-bg)',
+          textDecoration: 'none',
+          transition: 'box-shadow var(--transition-fast)',
+        }}
+        onMouseEnter={(e) => {
+          ;(e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-sm)'
+        }}
+        onMouseLeave={(e) => {
+          ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+        }}
+      >
+        <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>📄</span>
+        <span style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: 'clamp(0.875rem, 3vw, 1rem)' }}>
+          {item.title}
+        </span>
+        {item.isDraft && (
+          <span
+            style={{
+              fontSize: 'var(--font-size-xs)',
+              color: 'var(--accent)',
+              backgroundColor: 'var(--bg-primary)',
+              padding: '0.15em 0.5em',
+              borderRadius: 'var(--radius-sm)',
+              marginLeft: 'auto',
+            }}
+          >
+            Draft
+          </span>
+        )}
+      </Link>
+      <a
+        href={`/workspace/${branchId}/${courseId}/${item.slug.split('/').pop()}`}
+        onClick={(e) => e.stopPropagation()}
+        title="Open in Workspace Editor"
+        style={{
+          position: 'absolute',
+          right: '0.5rem',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: '1.75rem',
+          height: '1.75rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: 'var(--radius-sm)',
+          backgroundColor: 'var(--bg-secondary)',
+          border: '1px solid var(--border)',
+          textDecoration: 'none',
+          color: 'var(--text-secondary)',
+          fontSize: '0.8rem',
+          cursor: 'pointer',
+          opacity: showEdit ? 0.85 : 0,
+          transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',
+        }}
+        onMouseEnter={(e) => {
+          const el = e.currentTarget
+          el.style.backgroundColor = 'var(--accent)'
+          el.style.color = '#fff'
+          el.style.borderColor = 'var(--accent)'
+        }}
+        onMouseLeave={(e) => {
+          const el = e.currentTarget
+          el.style.backgroundColor = 'var(--bg-secondary)'
+          el.style.color = 'var(--text-secondary)'
+          el.style.borderColor = 'var(--border)'
+        }}
+      >
+        ✏
+      </a>
+    </div>
+  )
+}
+
 export function CoursePage() {
   const [newNoteOpen, setNewNoteOpen] = useState(false)
   const { branch: branchId, course: courseId } = useParams<{ branch: string; course: string }>()
@@ -74,46 +166,7 @@ export function CoursePage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {allItems.map((item) => (
-            <Link
-              key={item.slug}
-              to={item.isDraft ? `/editor/${item.slug}` : `/${item.slug}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.65rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--card-border)',
-                backgroundColor: item.isDraft ? 'var(--tag-bg)' : 'var(--card-bg)',
-                textDecoration: 'none',
-                transition: 'box-shadow var(--transition-fast)',
-              }}
-              onMouseEnter={(e) => {
-                ;(e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-sm)'
-              }}
-              onMouseLeave={(e) => {
-                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
-              }}
-            >
-              <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>📄</span>
-              <span style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: 'clamp(0.875rem, 3vw, 1rem)' }}>
-                {item.title}
-              </span>
-              {item.isDraft && (
-                <span
-                  style={{
-                    fontSize: 'var(--font-size-xs)',
-                    color: 'var(--accent)',
-                    backgroundColor: 'var(--bg-primary)',
-                    padding: '0.15em 0.5em',
-                    borderRadius: 'var(--radius-sm)',
-                    marginLeft: 'auto',
-                  }}
-                >
-                  Draft
-                </span>
-              )}
-            </Link>
+            <NoteItem key={item.slug} item={item} branchId={branchId!} courseId={courseId!} />
           ))}
         </div>
       )}

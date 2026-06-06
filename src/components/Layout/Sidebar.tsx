@@ -7,6 +7,38 @@ interface SidebarProps {
   onClose?: () => void
 }
 
+function EditButton({ href }: { href: string }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <a
+      href={href}
+      onClick={(e) => e.stopPropagation()}
+      title="Open in Workspace Editor"
+      style={{
+        width: '1.25rem',
+        height: '1.25rem',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 'var(--radius-sm)',
+        textDecoration: 'none',
+        fontSize: '0.65rem',
+        cursor: 'pointer',
+        opacity: hovered ? 1 : 0,
+        color: hovered ? '#fff' : 'var(--text-secondary)',
+        backgroundColor: hovered ? 'var(--accent)' : 'transparent',
+        transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',
+        flexShrink: 0,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      ✏
+    </a>
+  )
+}
+
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false)
   const branches = useMemo(() => getAllBranches(), [])
@@ -73,6 +105,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             key={branch.id}
             label={branch.name}
             href={`/${branch.id}`}
+            workspaceHref={`/workspace/${branch.id}`}
             depth={0}
             onClick={handleNav}
           >
@@ -81,6 +114,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 key={course.id}
                 label={course.name}
                 href={`/${branch.id}/${course.id}`}
+                workspaceHref={`/workspace/${branch.id}/${course.id}`}
                 depth={1}
                 onClick={handleNav}
               />
@@ -95,56 +129,68 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 function SidebarItem({
   label,
   href,
+  workspaceHref,
   depth,
   onClick,
 }: {
   label: string
   href?: string
+  workspaceHref?: string
   depth: number
   onClick?: () => void
 }) {
+  const [hovered, setHovered] = useState(false)
+
   return (
-    <Link
-      to={href || '#'}
-      onClick={onClick}
+    <div
       style={{
-        display: 'block',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.15rem',
         padding: '0.375rem 0.75rem',
         paddingLeft: `${0.75 + depth * 1.25}rem`,
         borderRadius: 'var(--radius-sm)',
-        cursor: 'pointer',
-        color: href ? 'var(--link)' : 'var(--sidebar-text)',
-        fontWeight: href ? 400 : 600,
-        fontSize: 'var(--font-size-sm)',
-        textDecoration: 'none',
-        transition: 'background-color var(--transition-fast)',
       }}
-      onMouseEnter={(e) => {
-        ;(e.currentTarget as HTMLElement).style.backgroundColor = 'var(--sidebar-hover-bg)'
-      }}
-      onMouseLeave={(e) => {
-        ;(e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
-      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {label}
-    </Link>
+      <Link
+        to={href || '#'}
+        onClick={onClick}
+        style={{
+          flex: 1,
+          display: 'block',
+          cursor: 'pointer',
+          color: href ? 'var(--link)' : 'var(--sidebar-text)',
+          fontWeight: href ? 400 : 600,
+          fontSize: 'var(--font-size-sm)',
+          textDecoration: 'none',
+        }}
+      >
+        {label}
+      </Link>
+      {workspaceHref && <EditButton href={workspaceHref} />}
+    </div>
   )
 }
 
 function CollapsibleBranch({
   label,
   href,
+  workspaceHref,
   depth,
   children,
   onClick,
 }: {
   label: string
   href?: string
+  workspaceHref?: string
   depth: number
   children: React.ReactNode
   onClick?: () => void
 }) {
   const [expanded, setExpanded] = useState(depth < 1)
+  const [hovered, setHovered] = useState(false)
   const hasChildren = children != null
 
   return (
@@ -164,18 +210,20 @@ function CollapsibleBranch({
           transition: 'background-color var(--transition-fast)',
           userSelect: 'none',
         }}
+        onMouseEnter={(e) => {
+          setHovered(true)
+          ;(e.currentTarget as HTMLElement).style.backgroundColor = 'var(--sidebar-hover-bg)'
+        }}
+        onMouseLeave={(e) => {
+          setHovered(false)
+          ;(e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
+        }}
         onClick={() => {
           if (hasChildren) setExpanded(!expanded)
           else if (href && onClick) {
             onClick()
             window.location.href = href
           }
-        }}
-        onMouseEnter={(e) => {
-          ;(e.currentTarget as HTMLElement).style.backgroundColor = 'var(--sidebar-hover-bg)'
-        }}
-        onMouseLeave={(e) => {
-          ;(e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'
         }}
       >
         {hasChildren && (
@@ -184,14 +232,15 @@ function CollapsibleBranch({
           </span>
         )}
         {!hasChildren && <span style={{ width: '1em', flexShrink: 0 }} />}
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
           {label}
         </span>
+        {workspaceHref && <EditButton href={workspaceHref} />}
       </div>
       {hasChildren && expanded && (
         <div>
           {href && (
-            <SidebarItem label={`📋 ${label}`} href={href} depth={depth + 1} onClick={onClick} />
+            <SidebarItem label={`📋 ${label}`} href={href} workspaceHref={workspaceHref} depth={depth + 1} onClick={onClick} />
           )}
           {children}
         </div>

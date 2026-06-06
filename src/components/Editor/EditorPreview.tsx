@@ -1,11 +1,18 @@
 import { useEffect, useRef, useMemo, type DetailedHTMLProps, type HTMLAttributes } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
 import rehypeRaw from 'rehype-raw'
-import { GraphView } from '../GraphView'
 // @ts-expect-error plantuml-encoder has no types
 import { encode as plantumlEncode } from 'plantuml-encoder'
+import yaml from 'js-yaml'
 import mermaid from 'mermaid'
+import { GraphView } from '../GraphView'
+import { Diagram } from '../Diagram/Diagram'
+import type { DiagramData, DiagramProps } from '../Diagram/types'
+
+type DiagramPropsType = DiagramProps['type']
 
 interface Props {
   content: string
@@ -130,14 +137,36 @@ export function EditorPreview({ content }: Props) {
       }}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeKatex, rehypeRaw]}
         components={{
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className ?? '')
             const code = String(children).replace(/\n$/, '')
             if (match && match[1] === 'mermaid') return <MermaidBlock code={code} />
             if (match && match[1] === 'plantuml') return <PlantUmlBlock code={code} />
+            if (match && match[1] === 'svg') {
+              const svgContent = code.trim()
+              return (
+                <div
+                  className="svg-block"
+                  dangerouslySetInnerHTML={{ __html: svgContent.startsWith('<svg') || svgContent.startsWith('<SVG') ? svgContent : `<svg xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>` }}
+                  style={{ margin: '1em 0', textAlign: 'center' }}
+                />
+              )
+            }
+            if (match && match[1] === 'diagram') {
+              try {
+                const parsed = yaml.load(code) as { type: string; data?: DiagramData; [key: string]: unknown }
+                const diagramType = parsed.type as DiagramPropsType
+                const diagramData: DiagramData = parsed.data ?? parsed as unknown as DiagramData
+                if (['flow', 'tree', 'network', 'venn', 'bar', 'line'].includes(diagramType)) {
+                  return <Diagram type={diagramType} data={diagramData} />
+                }
+              } catch {
+                // parsing failed — render as fallback code
+              }
+            }
             return <code className={className} {...props}>{children}</code>
           },
           div(props: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>) {

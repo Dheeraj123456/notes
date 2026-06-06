@@ -2,7 +2,10 @@ import { type ComponentType, Suspense, useMemo, useCallback, type AnchorHTMLAttr
 import { MDXProvider } from '@mdx-js/react'
 import { useNavigate } from 'react-router-dom'
 import { MermaidRenderer } from './MermaidRenderer'
+import { DiagramRenderer } from '../Diagram/DiagramRenderer'
 import { GraphView } from '../GraphView'
+import { Diagram } from '../Diagram/Diagram'
+import { ThreeScene } from '../Diagram/ThreeScene'
 
 interface ContentModule {
   default: ComponentType<Record<string, unknown>>
@@ -56,6 +59,8 @@ interface MarkdownRendererProps {
 
 const components = {
   GraphView,
+  Diagram,
+  ThreeScene,
   a: MDXLink,
 }
 
@@ -89,6 +94,7 @@ export function MarkdownRenderer({ slug }: MarkdownRendererProps) {
         >
           <Content />
           <MermaidRenderer key={slug} />
+          <DiagramRenderer />
         </div>
       </MDXProvider>
     </Suspense>
