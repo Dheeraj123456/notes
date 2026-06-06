@@ -2,6 +2,8 @@
 
 A static note-taking and publishing platform built with React, TypeScript, and Vite. Write notes locally in MDX, publish to GitHub Pages with one push, and edit online via the built-in editor.
 
+> **📖 Creating content?** See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide on branches, courses, notes, diagrams, and the workspace editor.
+
 ## Features
 
 - **MDX Content** — Write notes in Markdown with JSX components, KaTeX math, diagrams, and more.
