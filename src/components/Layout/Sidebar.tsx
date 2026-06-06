@@ -11,8 +11,8 @@ function EditButton({ href }: { href: string }) {
   const [hovered, setHovered] = useState(false)
 
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       onClick={(e) => e.stopPropagation()}
       title="Open in Workspace Editor"
       style={{
@@ -35,7 +35,7 @@ function EditButton({ href }: { href: string }) {
       onMouseLeave={() => setHovered(false)}
     >
       ✏
-    </a>
+    </Link>
   )
 }
 

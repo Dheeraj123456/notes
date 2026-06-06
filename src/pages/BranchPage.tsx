@@ -36,8 +36,8 @@ function CourseCard({ branchId, course }: { branchId: string; course: { id: stri
           {course.description}
         </p>
       </Link>
-      <a
-        href={`/workspace/${branchId}/${course.id}`}
+      <Link
+        to={`/workspace/${branchId}/${course.id}`}
         onClick={(e) => e.stopPropagation()}
         title="Open in Workspace Editor"
         style={{
@@ -60,20 +60,20 @@ function CourseCard({ branchId, course }: { branchId: string; course: { id: stri
           transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',
         }}
         onMouseEnter={(e) => {
-          const el = e.currentTarget
+          const el = e.currentTarget as HTMLElement
           el.style.backgroundColor = 'var(--accent)'
           el.style.color = '#fff'
           el.style.borderColor = 'var(--accent)'
         }}
         onMouseLeave={(e) => {
-          const el = e.currentTarget
+          const el = e.currentTarget as HTMLElement
           el.style.backgroundColor = 'var(--bg-secondary)'
           el.style.color = 'var(--text-secondary)'
           el.style.borderColor = 'var(--border)'
         }}
       >
         ✏
-      </a>
+      </Link>
     </div>
   )
 }

@@ -53,8 +53,8 @@ function NoteItem({ item, branchId, courseId }: { item: { slug: string; title: s
           </span>
         )}
       </Link>
-      <a
-        href={`/workspace/${branchId}/${courseId}/${item.slug.split('/').pop()}`}
+      <Link
+        to={`/workspace/${branchId}/${courseId}/${item.slug.split('/').pop()}`}
         onClick={(e) => e.stopPropagation()}
         title="Open in Workspace Editor"
         style={{
@@ -78,20 +78,20 @@ function NoteItem({ item, branchId, courseId }: { item: { slug: string; title: s
           transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',
         }}
         onMouseEnter={(e) => {
-          const el = e.currentTarget
+          const el = e.currentTarget as HTMLElement
           el.style.backgroundColor = 'var(--accent)'
           el.style.color = '#fff'
           el.style.borderColor = 'var(--accent)'
         }}
         onMouseLeave={(e) => {
-          const el = e.currentTarget
+          const el = e.currentTarget as HTMLElement
           el.style.backgroundColor = 'var(--bg-secondary)'
           el.style.color = 'var(--text-secondary)'
           el.style.borderColor = 'var(--border)'
         }}
       >
         ✏
-      </a>
+      </Link>
     </div>
   )
 }

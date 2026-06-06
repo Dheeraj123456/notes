@@ -57,8 +57,8 @@ function BranchCard({ branch, color }: { branch: { id: string; name: string; des
           {branch.description}
         </p>
       </Link>
-      <a
-        href={`/workspace/${branch.id}`}
+      <Link
+        to={`/workspace/${branch.id}`}
         onClick={(e) => e.stopPropagation()}
         title="Open in Workspace Editor"
         style={{
@@ -81,20 +81,20 @@ function BranchCard({ branch, color }: { branch: { id: string; name: string; des
           transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',
         }}
         onMouseEnter={(e) => {
-          const el = e.currentTarget
-          el.style.backgroundColor = color
+          const el = e.currentTarget as HTMLElement
+          el.style.backgroundColor = 'var(--accent)'
           el.style.color = '#fff'
-          el.style.borderColor = color
+          el.style.borderColor = 'var(--accent)'
         }}
         onMouseLeave={(e) => {
-          const el = e.currentTarget
+          const el = e.currentTarget as HTMLElement
           el.style.backgroundColor = 'var(--bg-secondary)'
           el.style.color = 'var(--text-secondary)'
           el.style.borderColor = 'var(--border)'
         }}
       >
         ✏
-      </a>
+      </Link>
     </div>
   )
 }

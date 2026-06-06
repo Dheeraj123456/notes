@@ -48,6 +48,9 @@ for (const route of routes) {
   writeFileSync(outPath, html)
 }
 
+// Add workspace route for SPA fallback
+routes.push('/workspace')
+
 copyFileSync(join(DIST, 'index.html'), join(DIST, '404.html'))
 
 writeFileSync(join(DIST, '.nojekyll'), '')

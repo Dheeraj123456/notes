@@ -17,8 +17,8 @@ export function NotePage() {
   return (
     <div>
       <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-        <a
-          href={`/workspace/${slug}`}
+        <Link
+          to={`/workspace/${slug}`}
           title="Open in Workspace Editor"
           style={{
             display: 'inline-flex',
@@ -36,7 +36,7 @@ export function NotePage() {
           }}
         >
           ✏ Edit
-        </a>
+        </Link>
       </div>
       <MarkdownRenderer slug={slug} />
     </div>
