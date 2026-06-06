@@ -6,6 +6,7 @@ const colors = ['#58a6ff', '#3fb950', '#d29922', '#f0883e', '#db6d28', '#a371f7'
 
 function BranchCard({ branch, color }: { branch: { id: string; name: string; description: string; icon?: string }; color: string }) {
   const [showEdit, setShowEdit] = useState(false)
+  const isTouch = typeof window !== 'undefined' && 'ontouchstart' in window
 
   return (
     <div
@@ -77,7 +78,7 @@ function BranchCard({ branch, color }: { branch: { id: string; name: string; des
           color: 'var(--text-secondary)',
           fontSize: '0.8rem',
           cursor: 'pointer',
-          opacity: showEdit ? 0.85 : 0,
+          opacity: showEdit ? 0.85 : (isTouch ? 0.5 : 0),
           transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',
         }}
         onMouseEnter={(e) => {

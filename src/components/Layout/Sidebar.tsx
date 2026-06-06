@@ -9,6 +9,7 @@ interface SidebarProps {
 
 function EditButton({ href }: { href: string }) {
   const [hovered, setHovered] = useState(false)
+  const isTouch = typeof window !== 'undefined' && 'ontouchstart' in window
 
   return (
     <Link
@@ -25,7 +26,7 @@ function EditButton({ href }: { href: string }) {
         textDecoration: 'none',
         fontSize: '0.65rem',
         cursor: 'pointer',
-        opacity: hovered ? 1 : 0,
+        opacity: hovered || isTouch ? (isTouch ? 0.6 : 1) : 0,
         color: hovered ? '#fff' : 'var(--text-secondary)',
         backgroundColor: hovered ? 'var(--accent)' : 'transparent',
         transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',

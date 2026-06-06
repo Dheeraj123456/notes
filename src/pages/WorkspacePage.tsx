@@ -12,6 +12,9 @@ import { SvgBuilder } from '../components/SvgBuilder/SvgBuilder'
 import { getGitHubConfig, getGitHubFile, saveGitHubFile, type GitHubConfig } from '../utils/github'
 import { createBranch as storeCreateBranch, createCourse as storeCreateCourse, createFile as storeCreateFile, loadWorkspace } from '../utils/workspace'
 
+const MOBILE_BREAKPOINT = 1024
+const STACK_BREAKPOINT = 768
+
 const BASE = import.meta.env.BASE_URL
 
 export function WorkspacePage() {
@@ -27,6 +30,23 @@ export function WorkspacePage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [showPreview, setShowPreview] = useState(true)
   const [svgBuilderOpen, setSvgBuilderOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT)
+  const [isStacked, setIsStacked] = useState(window.innerWidth <= STACK_BREAKPOINT)
+
+  useEffect(() => {
+    const check = () => {
+      const mobile = window.innerWidth <= MOBILE_BREAKPOINT
+      const stacked = window.innerWidth <= STACK_BREAKPOINT
+      setIsMobile(mobile)
+      setIsStacked(stacked)
+      if (mobile) setSidebarOpen(false)
+      else setSidebarOpen(true)
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const contentRef = useRef(content)
@@ -205,15 +225,44 @@ export function WorkspacePage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 85,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+          }}
+        />
+      )}
+
       <div style={{
-        width: '280px', minWidth: '280px', borderRight: '1px solid var(--border)',
-        backgroundColor: 'var(--bg-secondary)', overflow: 'hidden',
+        width: isMobile ? 'min(85vw, 320px)' : '280px',
+        minWidth: isMobile ? 'min(85vw, 320px)' : '280px',
+        borderRight: '1px solid var(--border)',
+        backgroundColor: 'var(--bg-secondary)',
+        overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
+        position: isMobile ? 'fixed' : 'relative',
+        top: isMobile ? 0 : undefined,
+        left: isMobile ? 0 : undefined,
+        zIndex: isMobile ? 90 : undefined,
+        height: isMobile ? '100vh' : undefined,
+        transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : undefined,
+        transition: isMobile ? 'transform 250ms ease' : undefined,
       }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>Workspace</span>
+          {isMobile && (
+            <button onClick={() => setSidebarOpen(false)} style={{
+              background: 'none', border: 'none', color: 'var(--text-secondary)',
+              cursor: 'pointer', fontSize: '1.25rem', padding: '0.25rem', lineHeight: 1,
+            }}>✕</button>
+          )}
+        </div>
         <WorkspaceTree
           api={api}
           selectedFile={selectedFilePath}
-          onSelectFile={setSelectedFilePath}
+          onSelectFile={(fp) => { setSelectedFilePath(fp); if (isMobile) setSidebarOpen(false) }}
           initialExpanded={urlBranch ? [`${urlBranch}${urlCourse ? `/${urlCourse}` : ''}`] : undefined}
         />
         <div style={{ borderTop: '1px solid var(--border)' }}>
@@ -226,10 +275,19 @@ export function WorkspacePage() {
           <>
             <div style={{
               display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.25rem 0.75rem',
+              padding: '0.35rem 0.75rem',
               backgroundColor: 'var(--bg-secondary)',
               borderBottom: '1px solid var(--border)',
             }}>
+              {isMobile && (
+                <button onClick={() => setSidebarOpen(v => !v)} style={{
+                  background: 'none', border: 'none', color: 'var(--text-secondary)',
+                  cursor: 'pointer', fontSize: '1.1rem', padding: '0', lineHeight: 1,
+                  display: 'flex', alignItems: 'center',
+                }}>
+                  ☰
+                </button>
+              )}
               <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {selectedFilePath}
               </span>
@@ -248,16 +306,36 @@ export function WorkspacePage() {
               onBack={handleBack}
               onDrawIo={() => setSvgBuilderOpen(true)}
               fileChanged={currentFile?.status === 'modified'}
+              isMobile={isMobile}
             />
 
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-              <div style={{ flex: showPreview ? 1 : 1, overflow: 'auto', borderRight: showPreview ? '1px solid var(--border)' : 'none' }}>
+            <div style={{
+              display: 'flex',
+              flex: 1,
+              overflow: 'hidden',
+              flexDirection: isStacked ? 'column' : 'row',
+            }}>
+              <div style={{
+                flex: isStacked ? '0 0 50%' : 1,
+                overflow: 'auto',
+                borderRight: !isStacked && showPreview ? '1px solid var(--border)' : 'none',
+                borderBottom: isStacked && showPreview ? '1px solid var(--border)' : 'none',
+              }}>
+                {isStacked && showPreview && (
+                  <div style={{
+                    padding: '0.35rem 0.75rem', fontSize: 'var(--font-size-xs)',
+                    color: 'var(--text-muted)', backgroundColor: 'var(--bg-secondary)',
+                    borderBottom: '1px solid var(--border)',
+                  }}>
+                    Editor
+                  </div>
+                )}
                 <MDEditor
                   value={content}
                   onChange={handleChange}
                   preview="edit"
                   height="100%"
-                  style={{ height: '100%' }}
+                  style={{ height: '100%', minHeight: isStacked ? '40vh' : undefined }}
                   textareaProps={{
                     placeholder: 'Start writing markdown...',
                     style: { fontFamily: 'var(--font-mono)', fontSize: 'var(--font-size-sm)' },
@@ -266,7 +344,20 @@ export function WorkspacePage() {
               </div>
 
               {showPreview && (
-                <div style={{ flex: 1, overflow: 'auto', backgroundColor: 'var(--bg-primary)' }}>
+                <div style={{
+                  flex: isStacked ? '0 0 50%' : 1,
+                  overflow: 'auto',
+                  backgroundColor: 'var(--bg-primary)',
+                }}>
+                  {isStacked && (
+                    <div style={{
+                      padding: '0.35rem 0.75rem', fontSize: 'var(--font-size-xs)',
+                      color: 'var(--text-muted)', backgroundColor: 'var(--bg-secondary)',
+                      borderBottom: '1px solid var(--border)',
+                    }}>
+                      Preview
+                    </div>
+                  )}
                   <EditorPreview content={content} />
                 </div>
               )}
@@ -288,10 +379,25 @@ export function WorkspacePage() {
             </div>
           </>
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, flexDirection: 'column', gap: '1rem', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: '3rem' }}>📝</div>
-            <div style={{ fontSize: 'var(--font-size-base)' }}>Select a file from the workspace tree</div>
-            <div style={{ fontSize: 'var(--font-size-sm)' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flex: 1, flexDirection: 'column', gap: '0.75rem',
+            color: 'var(--text-muted)', padding: '1rem',
+          }}>
+            {isMobile && (
+              <button onClick={() => setSidebarOpen(true)} style={{
+                padding: '0.5em 1em', borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)', backgroundColor: 'var(--accent)',
+                color: '#fff', cursor: 'pointer',
+                fontFamily: 'var(--font-body)', fontSize: 'var(--font-size-sm)',
+                marginBottom: '0.5rem',
+              }}>
+                ☰ Open Workspace Tree
+              </button>
+            )}
+            <div style={{ fontSize: 'clamp(2rem, 8vw, 3rem)' }}>📝</div>
+            <div style={{ fontSize: 'var(--font-size-base)', textAlign: 'center' }}>Select a file from the workspace tree</div>
+            <div style={{ fontSize: 'var(--font-size-sm)', textAlign: 'center' }}>
               Or create a new branch, course, or file to get started
             </div>
           </div>

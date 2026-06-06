@@ -46,17 +46,18 @@ export function AppShell({ children }: AppShellProps) {
       <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
         {sidebarOverlay}
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <main
-          style={{
-            flex: 1,
-            marginLeft: !isMobile && sidebarOpen ? 'var(--sidebar-width)' : 0,
-            transition: 'margin-left var(--transition-base)',
-            padding: isMobile ? '1rem 1rem' : '1.5rem 2rem',
-            maxWidth: 'var(--content-max-width)',
-            minWidth: 0,
-            overflowX: 'hidden',
-          }}
-        >
+          <main
+            style={{
+              flex: 1,
+              marginLeft: !isMobile && sidebarOpen ? 'var(--sidebar-width)' : 0,
+              transition: 'margin-left var(--transition-base)',
+              padding: isMobile ? '1rem 1rem' : '1.5rem 2rem',
+              maxWidth: 'var(--content-max-width)',
+              minWidth: 0,
+              overflowX: 'hidden',
+              wordBreak: 'break-word',
+            }}
+          >
           <Breadcrumbs />
           {children}
           <footer

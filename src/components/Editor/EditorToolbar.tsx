@@ -13,6 +13,7 @@ interface Props {
   onBack?: () => void
   onDrawIo?: () => void
   fileChanged?: boolean
+  isMobile?: boolean
 }
 
 export function EditorToolbar({
@@ -28,14 +29,15 @@ export function EditorToolbar({
   onBack,
   onDrawIo,
   fileChanged,
+  isMobile,
 }: Props) {
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.5rem 0.75rem',
+        gap: '0.35rem',
+        padding: '0.35rem 0.75rem',
         backgroundColor: 'var(--bg-secondary)',
         borderBottom: '1px solid var(--border)',
         flexWrap: 'wrap',
@@ -49,10 +51,10 @@ export function EditorToolbar({
           fontFamily: 'var(--font-body)', fontSize: 'var(--font-size-sm)',
           lineHeight: 1, whiteSpace: 'nowrap', flexShrink: 0,
         }}>
-          ← Back
+          {isMobile ? '←' : '← Back'}
         </button>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1, minWidth: 0 }}>
         <span
           style={{
             fontSize: 'var(--font-size-sm)',
@@ -73,6 +75,7 @@ export function EditorToolbar({
               backgroundColor: 'var(--tag-bg)',
               padding: '0.15em 0.5em',
               borderRadius: 'var(--radius-sm)',
+              flexShrink: 0,
             }}
           >
             Draft
@@ -86,65 +89,81 @@ export function EditorToolbar({
               backgroundColor: 'var(--tag-bg)',
               padding: '0.15em 0.5em',
               borderRadius: 'var(--radius-sm)',
+              flexShrink: 0,
             }}
           >
-            Modified
+            {isMobile ? 'Mod' : 'Modified'}
           </span>
         )}
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
         {saveStatus && (
           <span
             style={{
               fontSize: 'var(--font-size-xs)',
               color: 'var(--text-secondary)',
+              whiteSpace: 'nowrap',
             }}
           >
             {saveStatus}
           </span>
         )}
 
-        <ToolbarButton onClick={onSaveLocal}>Save Local</ToolbarButton>
-        <ToolbarButton onClick={onDownload}>Download</ToolbarButton>
-        <ToolbarButton onClick={onCommit} disabled={!gitHubConfig} title={!gitHubConfig ? 'Configure GitHub first' : undefined}>
-          Commit to GitHub
-        </ToolbarButton>
-        {onDrawIo && (
-          <ToolbarButton onClick={onDrawIo} title="Open draw.io diagram editor">
-            draw.io
-          </ToolbarButton>
+        {isMobile ? (
+          <>
+            <ToolbarButton onClick={onSaveLocal} compact>💾</ToolbarButton>
+            <ToolbarButton onClick={onDownload} compact>⬇</ToolbarButton>
+            <ToolbarButton onClick={onCommit} disabled={!gitHubConfig} title={!gitHubConfig ? 'Configure GitHub first' : undefined} compact>
+              ⬆
+            </ToolbarButton>
+            {onDrawIo && (
+              <ToolbarButton onClick={onDrawIo} title="Open draw.io diagram editor" compact>📊</ToolbarButton>
+            )}
+            {onDelete && (
+              <ToolbarButton onClick={onDelete} title="Delete file" compact>🗑</ToolbarButton>
+            )}
+            <ToolbarButton onClick={onSettings} title="GitHub Settings" compact>⚙</ToolbarButton>
+          </>
+        ) : (
+          <>
+            <ToolbarButton onClick={onSaveLocal}>Save Local</ToolbarButton>
+            <ToolbarButton onClick={onDownload}>Download</ToolbarButton>
+            <ToolbarButton onClick={onCommit} disabled={!gitHubConfig} title={!gitHubConfig ? 'Configure GitHub first' : undefined}>
+              Commit
+            </ToolbarButton>
+            {onDrawIo && (
+              <ToolbarButton onClick={onDrawIo} title="Open draw.io diagram editor">draw.io</ToolbarButton>
+            )}
+            {onDelete && (
+              <ToolbarButton onClick={onDelete} title="Delete file">🗑</ToolbarButton>
+            )}
+            <ToolbarButton onClick={onSettings} title="GitHub Settings">⚙</ToolbarButton>
+          </>
         )}
-        {onDelete && (
-          <ToolbarButton onClick={onDelete} title="Delete file">
-            🗑
-          </ToolbarButton>
-        )}
-        <ToolbarButton onClick={onSettings} title="GitHub Settings">
-          ⚙
-        </ToolbarButton>
       </div>
     </div>
   )
 }
 
-function ToolbarButton({ onClick, disabled, title, children }: { onClick: () => void; disabled?: boolean; title?: string; children: React.ReactNode }) {
+function ToolbarButton({ onClick, disabled, title, children, compact }: { onClick: () => void; disabled?: boolean; title?: string; children: React.ReactNode; compact?: boolean }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       title={title}
       style={{
-        padding: '0.35em 0.75em',
+        padding: compact ? '0.3em 0.5em' : '0.35em 0.75em',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border)',
         backgroundColor: 'var(--bg-primary)',
         color: disabled ? 'var(--text-secondary)' : 'var(--text-primary)',
         cursor: disabled ? 'not-allowed' : 'pointer',
         fontFamily: 'var(--font-body)',
-        fontSize: 'var(--font-size-sm)',
+        fontSize: compact ? 'var(--font-size-xs)' : 'var(--font-size-sm)',
         whiteSpace: 'nowrap',
         opacity: disabled ? 0.5 : 1,
+        lineHeight: 1.2,
       }}
     >
       {children}

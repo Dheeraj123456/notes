@@ -4,6 +4,7 @@ import { getBranch, getCoursesForBranch, getWorkspaceCourses } from '../data/con
 
 function CourseCard({ branchId, course }: { branchId: string; course: { id: string; name: string; description: string } }) {
   const [showEdit, setShowEdit] = useState(false)
+  const isTouch = typeof window !== 'undefined' && 'ontouchstart' in window
 
   return (
     <div
@@ -56,7 +57,7 @@ function CourseCard({ branchId, course }: { branchId: string; course: { id: stri
           color: 'var(--text-secondary)',
           fontSize: '0.8rem',
           cursor: 'pointer',
-          opacity: showEdit ? 0.85 : 0,
+          opacity: showEdit ? 0.85 : (isTouch ? 0.5 : 0),
           transition: 'opacity var(--transition-fast), background-color var(--transition-fast)',
         }}
         onMouseEnter={(e) => {
