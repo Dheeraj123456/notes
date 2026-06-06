@@ -50,6 +50,14 @@ export async function createBranch(w: Workspace, name: string): Promise<Workspac
   if (w.branches.includes(name)) return w
   w.branches = [...w.branches, name]
   w.courses[name] = []
+  const metaPath = `${name}/_branch_`
+  if (!w.files[metaPath]) {
+    const now = new Date().toISOString()
+    w.files[metaPath] = {
+      content: JSON.stringify({ id: name, name, description: '', icon: '📁', order: 99 }, null, 2),
+      created: now, modified: now, sha: null, status: 'new',
+    }
+  }
   await saveWorkspace(w)
   return w
 }
@@ -85,6 +93,14 @@ export async function createCourse(w: Workspace, branch: string, name: string): 
   if (!w.courses[branch]) w.courses[branch] = []
   if (w.courses[branch].includes(name)) return w
   w.courses[branch] = [...w.courses[branch], name]
+  const metaPath = `${branch}/${name}/_course_`
+  if (!w.files[metaPath]) {
+    const now = new Date().toISOString()
+    w.files[metaPath] = {
+      content: JSON.stringify({ id: name, name, description: '', order: 99 }, null, 2),
+      created: now, modified: now, sha: null, status: 'new',
+    }
+  }
   await saveWorkspace(w)
   return w
 }

@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { loadWorkspace } from '../utils/workspace'
 
 export interface BranchMeta {
   id: string
@@ -137,4 +138,28 @@ export function resolveWikiSlug(slug: string): string | undefined {
   }
   const resolved = knownSlugs.get(slug)
   return resolved ? `/${slug}` : undefined
+}
+
+export async function getWorkspaceCourses(branchId: string): Promise<CourseMeta[]> {
+  try {
+    const w = await loadWorkspace()
+    const staticIds = new Set(getCoursesForBranch(branchId).map(c => c.id))
+    return (w.courses[branchId] || [])
+      .filter(name => !staticIds.has(name))
+      .map(name => ({ id: name, name, description: '', branchId, order: 99 }))
+  } catch {
+    return []
+  }
+}
+
+export async function getWorkspaceBranches(): Promise<BranchMeta[]> {
+  try {
+    const w = await loadWorkspace()
+    const staticIds = new Set(getAllBranches().map(b => b.id))
+    return w.branches
+      .filter(name => !staticIds.has(name))
+      .map(name => ({ id: name, name, description: '', icon: '📁', order: 99 }))
+  } catch {
+    return []
+  }
 }

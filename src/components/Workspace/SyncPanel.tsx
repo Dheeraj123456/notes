@@ -1,5 +1,7 @@
+import { useState, useEffect } from 'react'
 import { type SyncAPI } from '../../hooks/useSync'
 import type { WorkspaceAPI } from '../../hooks/useWorkspace'
+import { getGitHubConfig } from '../../utils/github'
 
 interface Props {
   sync: SyncAPI
@@ -8,10 +10,17 @@ interface Props {
 }
 
 export function SyncPanel({ sync, api, onOpenGitHubSettings }: Props) {
+  const [ghConfigured, setGhConfigured] = useState(!!getGitHubConfig())
+  useEffect(() => {
+    const check = () => setGhConfigured(!!getGitHubConfig())
+    window.addEventListener('storage', check)
+    return () => window.removeEventListener('storage', check)
+  }, [])
+  const unsynced = Object.values(api.workspace.files).filter(f => f.status !== 'synced').length
   return (
     <div style={{ padding: '0.25rem 0' }}>
       <div style={{ padding: '0.25rem 0.75rem', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.05em' }}>
-        SYNC
+        SYNC {unsynced > 0 && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>({unsynced} unsynced)</span>}
       </div>
 
       <div style={{ padding: '0 0.5rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
@@ -35,6 +44,10 @@ export function SyncPanel({ sync, api, onOpenGitHubSettings }: Props) {
         >
           ⚙ Configure GitHub
         </button>
+      </div>
+
+      <div style={{ padding: '0.25rem 0.75rem', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
+        {ghConfigured ? '✓ GitHub configured' : '✗ GitHub not configured — local only'}
       </div>
 
       {sync.results.length > 0 && (

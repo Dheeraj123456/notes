@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getAllBranches, getCoursesForBranch } from '../../data/content-index'
+import { getAllBranches, getCoursesForBranch, getWorkspaceBranches, getWorkspaceCourses } from '../../data/content-index'
 
 interface SidebarProps {
   isOpen: boolean
@@ -41,6 +41,8 @@ function EditButton({ href }: { href: string }) {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [isMobile, setIsMobile] = useState(false)
+  const [wsBranches, setWsBranches] = useState<{ id: string; name: string }[]>([])
+  const [wsCourses, setWsCourses] = useState<Record<string, { id: string; name: string }[]>>({})
   const branches = useMemo(() => getAllBranches(), [])
 
   useEffect(() => {
@@ -49,6 +51,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
   }, [])
+
+  useEffect(() => {
+    getWorkspaceBranches().then(extraBranches => {
+      setWsBranches(extraBranches)
+      const allBranchIds = [...branches.map(b => b.id), ...extraBranches.map(b => b.id)]
+      Promise.all(allBranchIds.map(id =>
+        getWorkspaceCourses(id).then(cs => ({ id, courses: cs }))
+      )).then(results => {
+        const map: Record<string, { id: string; name: string }[]> = {}
+        for (const { id, courses } of results) {
+          if (courses.length > 0) map[id] = courses
+        }
+        setWsCourses(map)
+      })
+    })
+  }, [branches])
 
   const handleNav = () => {
     if (isMobile) onClose?.()
@@ -98,8 +116,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         onClick={handleNav}
       />
 
-      {branches.map((branch) => {
-        const courses = getCoursesForBranch(branch.id)
+      {[...branches, ...wsBranches.map(b => ({ ...b, order: 99 }))].sort((a, b) => (a as any).order ?? 99 - (b as any).order ?? 99).map((branch) => {
+        const staticCourses = getCoursesForBranch(branch.id)
+        const extraCourses = wsCourses[branch.id] || []
+        const allCourses = [...staticCourses, ...extraCourses].sort((a, b) => (a.order ?? 99) - (b.order ?? 99))
         return (
           <CollapsibleBranch
             key={branch.id}
@@ -109,7 +129,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             depth={0}
             onClick={handleNav}
           >
-            {courses.map((course) => (
+            {allCourses.map((course) => (
               <SidebarItem
                 key={course.id}
                 label={course.name}

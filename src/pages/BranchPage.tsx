@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { getBranch, getCoursesForBranch } from '../data/content-index'
+import { getBranch, getCoursesForBranch, getWorkspaceCourses } from '../data/content-index'
 
 function CourseCard({ branchId, course }: { branchId: string; course: { id: string; name: string; description: string } }) {
   const [showEdit, setShowEdit] = useState(false)
@@ -82,7 +82,20 @@ export function BranchPage() {
   const navigate = useNavigate()
   const { branch: branchId } = useParams<{ branch: string }>()
   const branch = branchId ? getBranch(branchId) : undefined
-  const courses = branchId ? getCoursesForBranch(branchId) : []
+  const [courses, setCourses] = useState(branchId ? getCoursesForBranch(branchId) : [])
+
+  useEffect(() => {
+    if (!branchId) return
+    getWorkspaceCourses(branchId).then(wsCourses => {
+      if (wsCourses.length > 0) {
+        setCourses(prev => {
+          const merged = [...prev, ...wsCourses]
+          merged.sort((a, b) => (a.order ?? 99) - (b.order ?? 99))
+          return merged
+        })
+      }
+    })
+  }, [branchId])
 
   if (!branch) {
     return (
