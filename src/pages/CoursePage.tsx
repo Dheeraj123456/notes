@@ -15,7 +15,7 @@ function NoteItem({ item, branchId, courseId }: { item: { slug: string; title: s
       onMouseLeave={() => setShowEdit(false)}
     >
       <Link
-        to={item.isDraft ? `/editor/${item.slug}` : `/${item.slug}`}
+        to={item.isDraft ? `/workspace/${item.slug}` : `/${item.slug}`}
         style={{
           display: 'flex',
           alignItems: 'center',

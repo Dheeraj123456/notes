@@ -22,7 +22,7 @@ export function NewNoteModal({ open, onClose, branch, course }: Props) {
       .replace(/^-|-$/g, '')
     if (!slug) return
     onClose()
-    navigate(`/editor/${branch}/${course}/${slug}`)
+    navigate(`/workspace/${branch}/${course}/${slug}`)
   }
 
   return (

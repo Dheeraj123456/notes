@@ -264,7 +264,7 @@ export function WorkspacePage() {
         <WorkspaceTree
           api={api}
           selectedFile={selectedFilePath}
-          onSelectFile={(fp) => { setSelectedFilePath(fp); if (isMobile) setSidebarOpen(false) }}
+          onSelectFile={(fp) => { setSelectedFilePath(fp); navigate(`/workspace/${fp.replace(/\.mdx$/, '')}`, { replace: true }); if (isMobile) setSidebarOpen(false) }}
           initialExpanded={urlBranch ? [`${urlBranch}${urlCourse ? `/${urlCourse}` : ''}`] : undefined}
         />
         <div style={{ borderTop: '1px solid var(--border)' }}>

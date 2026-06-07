@@ -121,7 +121,10 @@ async function fetchWithTimeout(input: RequestInfo, init: RequestInit & { timeou
 }
 
 async function callOllama(prompt: string, url: string, model: string): Promise<string> {
-  const endpoint = `${url.replace(/\/+$/, '')}/api/generate`
+  const rawUrl = url.replace(/\/+$/, '')
+  const endpoint = import.meta.env.DEV && rawUrl.startsWith('http://localhost:11434')
+    ? `/ollama/api/generate`
+    : `${rawUrl}/api/generate`
   let res: Response
   try {
     res = await fetchWithTimeout(endpoint, {

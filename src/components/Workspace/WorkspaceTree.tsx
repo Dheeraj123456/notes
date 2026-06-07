@@ -134,7 +134,7 @@ export function WorkspaceTree({ api, selectedFile, onSelectFile, initialExpanded
 
       <NewBranchDialog open={showNewBranch} onConfirm={async (name) => { await createBranch(name); setShowNewBranch(false) }} onCancel={() => setShowNewBranch(false)} />
       <NewCourseDialog open={!!showNewCourse} onConfirm={async (name) => { await createCourse(showNewCourse!.branch, name); setShowNewCourse(null) }} onCancel={() => setShowNewCourse(null)} />
-      <NewFileDialog open={!!showNewFile} onConfirm={async (filename, template) => { await createFile(showNewFile!.branch, showNewFile!.course, filename, template); setShowNewFile(null) }} onCancel={() => setShowNewFile(null)} />
+      <NewFileDialog open={!!showNewFile} onConfirm={async (filename, template) => { await createFile(showNewFile!.branch, showNewFile!.course, filename, template); onSelectFile(filePath(showNewFile!.branch, showNewFile!.course, filename)); setShowNewFile(null) }} onCancel={() => setShowNewFile(null)} />
       <ConfirmDelete open={!!confirm} title={confirm?.title ?? ''} message={confirm?.message ?? ''} onConfirm={() => { confirm?.action(); setConfirm(null) }} onCancel={() => setConfirm(null)} />
     </div>
   )
