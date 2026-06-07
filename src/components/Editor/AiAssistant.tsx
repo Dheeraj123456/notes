@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getAiConfig, saveAiConfig, clearAiConfig, type AiConfig, type AiProvider } from '../../utils/ai-config'
 import { generateContent, rateLimiter } from '../../utils/ai'
 
@@ -32,6 +32,9 @@ export function AiAssistant({ onInsert, onClose }: Props) {
   const [apiKeyDraft, setApiKeyDraft] = useState(config.apiKey)
   const [ollamaUrlDraft, setOllamaUrlDraft] = useState(config.ollamaUrl)
   const [ollamaModelDraft, setOllamaModelDraft] = useState(config.ollamaModel)
+  const [imageData, setImageData] = useState<string | null>(null)
+  const [imageName, setImageName] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setApiKeyDraft(config.apiKey)
@@ -43,6 +46,15 @@ export function AiAssistant({ onInsert, onClose }: Props) {
     const updated = { ...config, ...partial }
     saveAiConfig(updated)
     setConfig(updated)
+  }
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageName(file.name)
+    const reader = new FileReader()
+    reader.onload = () => setImageData(reader.result as string)
+    reader.readAsDataURL(file)
   }
 
   const handleGenerate = async () => {
@@ -59,6 +71,7 @@ export function AiAssistant({ onInsert, onClose }: Props) {
         type: type as any,
         topic: topic.trim(),
         context: context.trim() || undefined,
+        imageData: imageData || undefined,
         provider: config.provider,
         apiKey: config.apiKey,
         modelName: config.modelName,
@@ -193,7 +206,7 @@ export function AiAssistant({ onInsert, onClose }: Props) {
               {needsApiKey ? (
                 <>🔒 Key stored in this browser only. Other sites cannot access it. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--link)' }}>Get a Gemini API key</a></>
               ) : (
-                <>🖥 Ensure Ollama is running locally with your model downloaded (<code style={{ fontSize: 'var(--font-size-xs)' }}>ollama pull llama3.2</code>)</>
+                <>🖥 Ensure Ollama is running locally with your model downloaded (<code style={{ fontSize: 'var(--font-size-xs)' }}>ollama pull llama3.2</code>). For vision, use <code style={{ fontSize: 'var(--font-size-xs)' }}>llava</code> or similar model.</>
               )}
             </div>
           </div>
@@ -228,6 +241,58 @@ export function AiAssistant({ onInsert, onClose }: Props) {
               placeholder="e.g., Data Structures, Computer Networks"
               style={{ width: '100%', padding: '0.4em 0.5em', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontSize: 'var(--font-size-sm)' }}
             />
+          </div>
+
+          <div>
+            <label style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>
+              Reference Image (optional)
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  padding: '0.35em 0.7em', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
+                  backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
+                  fontFamily: 'var(--font-body)', fontSize: 'var(--font-size-xs)',
+                }}
+              >
+                {imageData ? '🖼 Change Image' : '🖼 Choose Image'}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImage}
+                style={{ display: 'none' }}
+              />
+              {imageData && (
+                <>
+                  <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-secondary)' }}>{imageName}</span>
+                  <button
+                    onClick={() => { setImageData(null); setImageName(''); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                    style={{
+                      padding: '0.2em 0.5em', borderRadius: 'var(--radius-sm)', border: 'none',
+                      backgroundColor: 'transparent', color: '#e74c3c', cursor: 'pointer',
+                      fontFamily: 'var(--font-body)', fontSize: 'var(--font-size-xs)',
+                    }}
+                  >
+                    ✕ Remove
+                  </button>
+                </>
+              )}
+            </div>
+            {imageData && (
+              <div style={{ marginTop: '0.4rem' }}>
+                <img
+                  src={imageData}
+                  alt="Reference"
+                  style={{
+                    maxWidth: '100%', maxHeight: '180px', borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border)', objectFit: 'contain',
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

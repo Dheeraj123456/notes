@@ -43,6 +43,7 @@ export interface GenerateOptions {
   type: ContentType
   topic: string
   context?: string
+  imageData?: string
   provider: 'gemini' | 'ollama'
   apiKey: string
   modelName: string
@@ -50,21 +51,22 @@ export interface GenerateOptions {
   ollamaModel: string
 }
 
-function buildPrompt(type: string, topic: string, context?: string): string {
+function buildPrompt(type: string, topic: string, context?: string, hasImage?: boolean): string {
   const ctx = context ? ` for a ${context} course` : ''
+  const ref = hasImage ? '\n\nUse the attached image as a visual reference. Generate a diagram that matches the structure or concept shown in the image.' : ''
   switch (type) {
     case 'markdown':
-      return `Write a detailed study note about "${topic}"${ctx}. Include key concepts, explanations, examples, and relevant equations or code blocks. Format as markdown with headings, bullet points, and code fences where appropriate.`
+      return `Write a detailed study note about "${topic}"${ctx}. Include key concepts, explanations, examples, and relevant equations or code blocks. Format as markdown with headings, bullet points, and code fences where appropriate.${ref}`
     case 'mermaid':
-      return `Generate a mermaid.js diagram code for: ${topic}. Return ONLY the raw mermaid code block with triple backticks and the mermaid language tag. No explanation, no surrounding text.`
+      return `Generate a mermaid.js diagram code for: ${topic}. Return ONLY the raw mermaid code block with triple backticks and the mermaid language tag. No explanation, no surrounding text.${ref}`
     case 'plantuml':
-      return `Generate a PlantUML diagram for: ${topic}. Return ONLY the raw PlantUML code with @startuml/@enduml tags. No explanation, no surrounding text.`
+      return `Generate a PlantUML diagram for: ${topic}. Return ONLY the raw PlantUML code with @startuml/@enduml tags. No explanation, no surrounding text.${ref}`
     case 'svg':
-      return `Generate an SVG diagram for: ${topic}. Return ONLY valid SVG code inside <svg> tags with viewBox="0 0 400 300". Use colors, shapes, and text elements. No explanation, no surrounding text.`
+      return `Generate an SVG diagram for: ${topic}. Return ONLY valid SVG code inside <svg> tags with viewBox="0 0 400 300". Use colors, shapes, and text elements. No explanation, no surrounding text.${ref}`
     case 'graphview':
-      return `Generate a GraphView JSX component for: ${topic}. Return ONLY the <GraphView> JSX tag with type="bar" or type="line" and realistic data array. No explanation, no surrounding text. Format: <GraphView title="..." type="bar" data={[{name:"...",value:123}]} />`
+      return `Generate a GraphView JSX component for: ${topic}. Return ONLY the <GraphView> JSX tag with type="bar" or type="line" and realistic data array. No explanation, no surrounding text. Format: <GraphView title="..." type="bar" data={[{name:"...",value:123}]} />${ref}`
     default:
-      return `Write about: ${topic}`
+      return `Write about: ${topic}${ref}`
   }
 }
 
@@ -88,13 +90,20 @@ function postProcess(type: string, raw: string): string {
   return result
 }
 
-async function callGemini(prompt: string, apiKey: string, modelName: string): Promise<string> {
+async function callGemini(prompt: string, apiKey: string, modelName: string, imageData?: string): Promise<string> {
   const url = `${GEMINI_ENDPOINT}/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`
+  const parts: any[] = [{ text: prompt }]
+  if (imageData) {
+    const comma = imageData.indexOf(',')
+    const mimeType = imageData.slice(5, comma).split(';')[0]
+    const data = imageData.slice(comma + 1)
+    parts.push({ inlineData: { mimeType, data } })
+  }
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [{ parts }],
       generationConfig: { temperature: 0.7, maxOutputTokens: 4096 },
     }),
   })
@@ -120,17 +129,23 @@ async function fetchWithTimeout(input: RequestInfo, init: RequestInit & { timeou
   }
 }
 
-async function callOllama(prompt: string, url: string, model: string): Promise<string> {
+async function callOllama(prompt: string, url: string, model: string, imageData?: string): Promise<string> {
   const rawUrl = url.replace(/\/+$/, '')
   const endpoint = import.meta.env.DEV && rawUrl.startsWith('http://localhost:11434')
     ? `/ollama/api/generate`
     : `${rawUrl}/api/generate`
+  const body: any = { model, prompt, stream: false, options: { temperature: 0.7 } }
+  if (imageData) {
+    const comma = imageData.indexOf(',')
+    const data = imageData.slice(comma + 1)
+    body.images = [data]
+  }
   let res: Response
   try {
     res = await fetchWithTimeout(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, prompt, stream: false, options: { temperature: 0.7 } }),
+      body: JSON.stringify(body),
       timeout: 120000,
     })
   } catch (err: any) {
@@ -159,9 +174,9 @@ async function callOllama(prompt: string, url: string, model: string): Promise<s
 
 async function callModel(prompt: string, opts: GenerateOptions): Promise<string> {
   if (opts.provider === 'ollama') {
-    return callOllama(prompt, opts.ollamaUrl, opts.ollamaModel)
+    return callOllama(prompt, opts.ollamaUrl, opts.ollamaModel, opts.imageData)
   }
-  return callGemini(prompt, opts.apiKey, opts.modelName)
+  return callGemini(prompt, opts.apiKey, opts.modelName, opts.imageData)
 }
 
 export async function generateContent(opts: GenerateOptions): Promise<string> {
@@ -169,7 +184,7 @@ export async function generateContent(opts: GenerateOptions): Promise<string> {
     const wait = rateLimiter.waitTime()
     throw new Error(`Rate limit reached. Try again in ${Math.ceil(wait / 1000)} seconds.`)
   }
-  const prompt = buildPrompt(opts.type, opts.topic, opts.context)
+  const prompt = buildPrompt(opts.type, opts.topic, opts.context, !!opts.imageData)
   rateLimiter.record()
   const raw = await callModel(prompt, opts)
   return postProcess(opts.type, raw)
