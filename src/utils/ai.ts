@@ -108,19 +108,49 @@ async function callGemini(prompt: string, apiKey: string, modelName: string): Pr
   return text
 }
 
+async function fetchWithTimeout(input: RequestInfo, init: RequestInit & { timeout?: number } = {}): Promise<Response> {
+  const { timeout = 60000, ...fetchInit } = init
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeout)
+  try {
+    const res = await fetch(input, { ...fetchInit, signal: controller.signal })
+    return res
+  } finally {
+    clearTimeout(id)
+  }
+}
+
 async function callOllama(prompt: string, url: string, model: string): Promise<string> {
   const endpoint = `${url.replace(/\/+$/, '')}/api/generate`
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, prompt, stream: false, options: { temperature: 0.7 } }),
-  })
+  let res: Response
+  try {
+    res = await fetchWithTimeout(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, prompt, stream: false, options: { temperature: 0.7 } }),
+      timeout: 120000,
+    })
+  } catch (err: any) {
+    if (err.name === 'AbortError') {
+      throw new Error('Ollama request timed out (2 min). The model might still be loading or the server is busy.')
+    }
+    throw new Error(
+      'Cannot reach Ollama. Ensure the server is running:\n' +
+      `  • Start: ollama serve\n` +
+      `  • Pull model: ollama pull ${model}\n` +
+      `  • URL: ${endpoint}\n` +
+      `If using HTTPS for this site, set: OLLAMA_ORIGINS=*`
+    )
+  }
   if (!res.ok) {
     const err = await res.text().catch(() => '')
+    if (res.status === 404 && err.includes('model')) {
+      throw new Error(`Model "${model}" not found. Run: ollama pull ${model}`)
+    }
     throw new Error(`Ollama API error ${res.status}: ${err}`)
   }
   const data = await res.json()
-  if (!data.response) throw new Error('Ollama returned empty response')
+  if (data.response == null) throw new Error('Ollama returned empty response')
   return data.response
 }
 

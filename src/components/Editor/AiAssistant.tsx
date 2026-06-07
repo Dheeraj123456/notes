@@ -251,7 +251,7 @@ export function AiAssistant({ onInsert, onClose }: Props) {
           </div>
 
           {error && (
-            <div style={{ padding: '0.5rem', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(231,76,60,0.1)', border: '1px solid #e74c3c', fontSize: 'var(--font-size-xs)', color: '#e74c3c' }}>
+            <div style={{ padding: '0.5rem', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(231,76,60,0.1)', border: '1px solid #e74c3c', fontSize: 'var(--font-size-xs)', color: '#e74c3c', whiteSpace: 'pre-wrap', fontFamily: 'var(--font-mono)' }}>
               {error}
             </div>
           )}
