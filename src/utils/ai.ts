@@ -129,27 +129,10 @@ async function fetchWithTimeout(input: RequestInfo, init: RequestInit & { timeou
   }
 }
 
-async function pingOllama(rawUrl: string): Promise<'ok' | 'unreachable' | 'cors'> {
-  const pingUrl = `${rawUrl.replace(/\/+$/, '')}/`
-  const controller = new AbortController()
-  const id = setTimeout(() => controller.abort(), 3000)
-  try {
-    const res = await fetch(pingUrl, { method: 'GET', mode: 'no-cors', signal: controller.signal })
-    return res.type === 'opaque' || res.ok ? 'ok' : 'unreachable'
-  } catch {
-    return 'unreachable'
-  } finally {
-    clearTimeout(id)
-  }
-}
-
 async function callOllama(prompt: string, url: string, model: string, imageData?: string): Promise<string> {
   const rawUrl = url.replace(/\/+$/, '')
-
   const onLocalhost = typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  const viaProxy = import.meta.env.DEV && onLocalhost && rawUrl.includes('localhost')
-  const endpoint = viaProxy ? `/ollama/api/generate` : `${rawUrl}/api/generate`
 
   const body: any = { model, prompt, stream: false, options: { temperature: 0.7 } }
   if (imageData) {
@@ -157,35 +140,53 @@ async function callOllama(prompt: string, url: string, model: string, imageData?
     const data = imageData.slice(comma + 1)
     body.images = [data]
   }
-  let res: Response
-  try {
-    res = await fetchWithTimeout(endpoint, {
+
+  const tryFetch = async (endpoint: string): Promise<Response> => {
+    return fetchWithTimeout(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       timeout: 120000,
     })
-  } catch (err: any) {
-    if (err.name === 'AbortError') {
-      throw new Error('Ollama request timed out (2 min). The model might still be loading or the server is busy.')
+  }
+
+  let endpoint = `${rawUrl}/api/generate`
+  let res: Response
+  let firstError: any = null
+
+  if (onLocalhost && rawUrl.includes('localhost')) {
+    const proxyEndpoint = `/ollama/api/generate`
+    try {
+      res = await tryFetch(proxyEndpoint)
+      endpoint = proxyEndpoint
+    } catch (err) {
+      firstError = err
+      try {
+        res = await tryFetch(endpoint)
+      } catch (err2) {
+        const errMsg =
+          'Cannot reach Ollama via proxy or direct URL. Ensure the server is running:\n' +
+          `  • Start: ollama serve\n` +
+          `  • Pull model: ollama pull ${model}\n` +
+          `  • URL: ${rawUrl}\n` +
+          `  • Or restart with: OLLAMA_ORIGINS=* ollama serve`
+        throw new Error(errMsg)
+      }
     }
-    const ping = await pingOllama(rawUrl)
-    if (ping === 'ok') {
+  } else {
+    try {
+      res = await tryFetch(endpoint)
+    } catch (err: any) {
       throw new Error(
-        'Ollama server is running but the browser is blocking the request (CORS). Fix:\n' +
-        `  • Stop Ollama: ollama stop\n` +
-        `  • Restart with: OLLAMA_ORIGINS=* ollama serve\n` +
-        `  • Then pull model: ollama pull ${model}`
+        'Cannot reach Ollama. Ensure the server is running:\n' +
+        `  • Start: ollama serve\n` +
+        `  • Pull model: ollama pull ${model}\n` +
+        `  • URL: ${rawUrl}\n` +
+        `  • If on localhost, also try running: npm run dev`
       )
     }
-    throw new Error(
-      'Cannot reach Ollama. Ensure the server is running:\n' +
-      `  • Start: ollama serve\n` +
-      `  • Pull model: ollama pull ${model}\n` +
-      `  • URL: ${rawUrl}\n` +
-      `  • Check: curl ${rawUrl}/`
-    )
   }
+
   if (!res.ok) {
     const err = await res.text().catch(() => '')
     if (res.status === 404 && err.includes('model')) {
