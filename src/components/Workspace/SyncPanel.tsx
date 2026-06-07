@@ -11,6 +11,7 @@ interface Props {
 
 export function SyncPanel({ sync, api, onOpenGitHubSettings }: Props) {
   const [ghConfigured, setGhConfigured] = useState(!!getGitHubConfig())
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   useEffect(() => {
     const check = () => setGhConfigured(!!getGitHubConfig())
     window.addEventListener('storage', check)
@@ -48,6 +49,26 @@ export function SyncPanel({ sync, api, onOpenGitHubSettings }: Props) {
 
       <div style={{ padding: '0.25rem 0.75rem', fontSize: 'var(--font-size-xs)', color: 'var(--text-muted)' }}>
         {ghConfigured ? '✓ GitHub configured' : '✗ GitHub not configured — local only'}
+      </div>
+
+      <div style={{ padding: '0.25rem 0.75rem' }}>
+        {showClearConfirm ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: '0.25rem', border: '1px solid #e74c3c', borderRadius: 'var(--radius-sm)' }}>
+            <span style={{ fontSize: 'var(--font-size-xs)', color: '#e74c3c' }}>Delete all local data?</span>
+            <div style={{ display: 'flex', gap: '0.25rem' }}>
+              <button onClick={() => { api.clearWorkspace(); setShowClearConfirm(false) }} style={{ ...smallBtn, backgroundColor: '#e74c3c', color: '#fff', fontWeight: 600, flex: 1 }}>
+                Yes, Clear
+              </button>
+              <button onClick={() => setShowClearConfirm(false)} style={{ ...smallBtn, flex: 1 }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => setShowClearConfirm(true)} style={{ ...syncBtn, color: '#e74c3c', fontSize: 'var(--font-size-xs)' }}>
+            🗑 Clear Workspace
+          </button>
+        )}
       </div>
 
       {sync.results.length > 0 && (
@@ -108,6 +129,22 @@ export function SyncPanel({ sync, api, onOpenGitHubSettings }: Props) {
               </div>
             </div>
           ))}
+          <div style={{ padding: '0.25rem 0.75rem' }}>
+            <button
+              onClick={() => sync.applyResolutions(api)}
+              disabled={sync.conflicts.some(c => !c.resolve)}
+              style={{
+                ...smallBtn,
+                width: '100%',
+                backgroundColor: sync.conflicts.some(c => !c.resolve) ? 'var(--bg-primary)' : 'var(--accent)',
+                color: sync.conflicts.some(c => !c.resolve) ? 'var(--text-secondary)' : '#fff',
+                fontWeight: 600,
+                opacity: sync.conflicts.some(c => !c.resolve) ? 0.5 : 1,
+              }}
+            >
+              Apply Resolutions
+            </button>
+          </div>
         </div>
       )}
     </div>

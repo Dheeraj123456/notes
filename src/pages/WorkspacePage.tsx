@@ -9,6 +9,7 @@ import { EditorPreview } from '../components/Editor/EditorPreview'
 import { EditorToolbar } from '../components/Editor/EditorToolbar'
 import { GitHubSettingsModal } from '../components/Editor/GitHubSettingsModal'
 import { SvgBuilder } from '../components/SvgBuilder/SvgBuilder'
+import { AiAssistant } from '../components/Editor/AiAssistant'
 import { getGitHubConfig, getGitHubFile, saveGitHubFile, type GitHubConfig } from '../utils/github'
 import { createBranch as storeCreateBranch, createCourse as storeCreateCourse, createFile as storeCreateFile, loadWorkspace } from '../utils/workspace'
 
@@ -30,6 +31,7 @@ export function WorkspacePage() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [showPreview, setShowPreview] = useState(true)
   const [svgBuilderOpen, setSvgBuilderOpen] = useState(false)
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT)
   const [isStacked, setIsStacked] = useState(window.innerWidth <= STACK_BREAKPOINT)
@@ -305,8 +307,8 @@ export function WorkspacePage() {
               onDelete={handleDelete}
               onBack={handleBack}
               onDrawIo={() => setSvgBuilderOpen(true)}
+              onAiAssistant={() => setAiAssistantOpen(true)}
               fileChanged={currentFile?.status === 'modified'}
-              isMobile={isMobile}
             />
 
             <div style={{
@@ -405,6 +407,23 @@ export function WorkspacePage() {
       </div>
 
       <GitHubSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+
+      {aiAssistantOpen && (
+        <AiAssistant
+          onInsert={(code) => {
+            const pos = contentRef.current.length
+            const before = contentRef.current.slice(0, pos)
+            const after = contentRef.current.slice(pos)
+            const newContent = before + '\n' + code + '\n' + after
+            setContent(newContent)
+            if (selectedFilePath) {
+              const info = getFileFromPath(selectedFilePath)
+              if (info) updateFile(info.branch, info.course, info.filename, newContent)
+            }
+          }}
+          onClose={() => setAiAssistantOpen(false)}
+        />
+      )}
 
       {svgBuilderOpen && (
         <SvgBuilder

@@ -34,6 +34,7 @@ export interface SyncAPI {
   pushAll: (api: WorkspaceAPI) => Promise<void>
   pullAll: (api: WorkspaceAPI) => Promise<void>
   resolveConflict: (path: string, choice: 'local' | 'remote') => void
+  applyResolutions: (api: WorkspaceAPI) => Promise<void>
   clearConflicts: () => void
   clearResults: () => void
 }
@@ -186,8 +187,29 @@ export function useSync(): SyncAPI {
     setConflicts(prev => prev.map(c => c.path === path ? { ...c, resolve: choice } : c))
   }, [])
 
+  const applyResolutions = useCallback(async (api: WorkspaceAPI) => {
+    const newResults: SyncResult[] = []
+    for (const c of conflicts) {
+      if (!c.resolve) continue
+      const parts = c.path.split('/')
+      const filename = parts.pop()!
+      const course = parts.pop()!
+      const branch = parts.join('/')
+      if (c.resolve === 'remote') {
+        await api.updateFile(branch, course, filename, c.remoteContent)
+        await api.markFileSynced(branch, course, filename, '')
+        newResults.push({ path: c.path, action: 'pull', ok: true, message: 'Resolution: kept remote' })
+      } else {
+        await api.markFileSynced(branch, course, filename, '')
+        newResults.push({ path: c.path, action: 'push', ok: true, message: 'Resolution: kept local' })
+      }
+    }
+    setConflicts([])
+    setResults(prev => [...prev, ...newResults])
+  }, [conflicts])
+
   const clearConflicts = useCallback(() => setConflicts([]), [])
   const clearResults = useCallback(() => setResults([]), [])
 
-  return { syncing, results, conflicts, pushAll, pullAll, resolveConflict, clearConflicts, clearResults }
+  return { syncing, results, conflicts, pushAll, pullAll, resolveConflict, applyResolutions, clearConflicts, clearResults }
 }

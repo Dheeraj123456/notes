@@ -12,6 +12,7 @@ interface Props {
   onDelete?: () => void
   onBack?: () => void
   onDrawIo?: () => void
+  onAiAssistant?: () => void
   fileChanged?: boolean
   isMobile?: boolean
 }
@@ -28,6 +29,7 @@ export function EditorToolbar({
   onDelete,
   onBack,
   onDrawIo,
+  onAiAssistant,
   fileChanged,
   isMobile,
 }: Props) {
@@ -112,6 +114,7 @@ export function EditorToolbar({
 
         {isMobile ? (
           <>
+            <ToolbarButton onClick={onAiAssistant} compact title="AI Assistant">🤖</ToolbarButton>
             <ToolbarButton onClick={onSaveLocal} compact>💾</ToolbarButton>
             <ToolbarButton onClick={onDownload} compact>⬇</ToolbarButton>
             <ToolbarButton onClick={onCommit} disabled={!gitHubConfig} title={!gitHubConfig ? 'Configure GitHub first' : undefined} compact>
@@ -127,6 +130,7 @@ export function EditorToolbar({
           </>
         ) : (
           <>
+            <ToolbarButton onClick={onAiAssistant} title="AI Assistant">🤖 AI</ToolbarButton>
             <ToolbarButton onClick={onSaveLocal}>Save Local</ToolbarButton>
             <ToolbarButton onClick={onDownload}>Download</ToolbarButton>
             <ToolbarButton onClick={onCommit} disabled={!gitHubConfig} title={!gitHubConfig ? 'Configure GitHub first' : undefined}>

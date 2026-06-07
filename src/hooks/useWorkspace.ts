@@ -3,6 +3,7 @@ import {
   type Workspace,
   type FileEntry,
   loadWorkspace,
+  resetWorkspace,
   createBranch as storeCreateBranch,
   deleteBranch as storeDeleteBranch,
   renameBranch as storeRenameBranch,
@@ -25,6 +26,7 @@ export interface WorkspaceAPI {
   error: string | null
 
   refresh: () => Promise<void>
+  clearWorkspace: () => Promise<void>
 
   createBranch: (name: string) => Promise<void>
   deleteBranch: (name: string) => Promise<void>
@@ -76,6 +78,11 @@ export function useWorkspace(): WorkspaceAPI {
 
   const api: WorkspaceAPI = {
     workspace, loading, error, refresh,
+
+    clearWorkspace: async () => {
+      await resetWorkspace()
+      setWorkspace({ branches: [], courses: {}, files: {}, settings: { currentBranch: '', owner: '', repo: '', pat: '' } })
+    },
 
     createBranch: (name) => wrap(() => storeCreateBranch(structuredClone(workspace), name)),
     deleteBranch: (name) => wrap(() => storeDeleteBranch(structuredClone(workspace), name)),

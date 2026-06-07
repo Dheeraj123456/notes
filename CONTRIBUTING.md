@@ -190,7 +190,7 @@ For `.mdx` files rendered on static pages (not in the editor preview):
 
 ### draw.io (visual editor)
 
-Open the draw.io editor from the workspace toolbar. Draw visually, click **Export SVG**, then **Insert SVG** to add the diagram as an ` ```svg ` block.
+Open the draw.io editor from the workspace toolbar (SVG+ button). Draw visually, click **Export SVG** in the draw.io menu, then **Insert SVG** in the dialog to add the diagram as an ` ```svg ` block.
 
 ---
 
@@ -213,13 +213,42 @@ $$
 Navigate to `/workspace/<branch>/<course>/<note>` or click the ✏ icon on any page to open the editor.
 
 - **Save Local** — saves to IndexedDB in your browser
-- **Commit to GitHub** — pushes to GitHub (requires PAT configuration via ⚙)
+- **Commit to GitHub** — pushes to GitHub (requires PAT configuration via ⚙ in sync panel)
 - **draw.io** — opens visual diagram editor
+- **AI Assistant** — 🤖 button opens AI content generator (Gemini or Ollama)
+- **Back** — ← button navigates back to content pages
 - **Preview** — toggle live preview of rendered markdown
 
 ### Creating content in the workspace
 
 Right-click in the workspace tree to add branches, courses, or files. Files created here are stored locally until pushed to GitHub.
+
+### AI Assistant
+
+Click the 🤖 **AI** button in the editor toolbar to open the AI Assistant dialog:
+
+1. **Select a provider**: Gemini (remote, requires API key) or Ollama (local, requires running server)
+2. **Configure the model**:
+   - Gemini: paste your API key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey), optionally change the model name
+   - Ollama: set the server URL (default `http://localhost:11434`) and model name (e.g., `llama3.2`, `mistral`)
+3. **Enter a topic** — describe what you want (e.g., "Binary Search Tree", "HTTP Request Flow")
+4. **Choose content type**: Markdown Note, Mermaid Diagram, PlantUML, SVG, or GraphView Chart
+5. Optionally add **context** (e.g., course name) for more relevant output
+6. Click **Generate**, review the result, then **Insert into Editor**
+
+The API key is stored locally in your browser only. Enable **session-only** mode to clear the key when you close the tab.
+
+### Conflict Resolution
+
+When pulling from GitHub, if the same file was modified both locally and remotely, a conflict dialog appears. Choose **Keep Local**, **Keep Remote**, or **Apply Resolutions** (accepts all changes from both sides, with remote taking priority on line-level conflicts).
+
+### Sync Status
+
+The sync panel (⚙ button) shows:
+- **Unsynced files** count — files modified locally but not yet pushed
+- **GitHub configuration** status — whether a PAT is configured
+- **Push All** / **Pull All** buttons
+- **Clear Workspace** — removes all local data (with confirmation dialog)
 
 ---
 
