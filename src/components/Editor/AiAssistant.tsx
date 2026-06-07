@@ -173,7 +173,7 @@ export function AiAssistant({ onInsert, onClose }: Props) {
                   <input
                     value={ollamaModelDraft}
                     onChange={e => setOllamaModelDraft(e.target.value)}
-                    placeholder="llama3.2"
+                    placeholder="qwen2.5-vl:7b"
                     style={{ width: '120px', padding: '0.35em 0.5em', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-size-xs)' }}
                   />
                 </div>
@@ -206,7 +206,7 @@ export function AiAssistant({ onInsert, onClose }: Props) {
               {needsApiKey ? (
                 <>🔒 Key stored in this browser only. Other sites cannot access it. <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--link)' }}>Get a Gemini API key</a></>
               ) : (
-                <>🖥 Ensure Ollama is running locally with your model downloaded (<code style={{ fontSize: 'var(--font-size-xs)' }}>ollama pull llama3.2</code>). For vision, use <code style={{ fontSize: 'var(--font-size-xs)' }}>llava</code> or similar model.</>
+                <>🖥 Ensure Ollama is running locally with your model downloaded (<code style={{ fontSize: 'var(--font-size-xs)' }}>ollama pull qwen2.5-vl:7b</code>). Vision models (qwen2.5-vl, llava) support image references.</>
               )}
             </div>
           </div>

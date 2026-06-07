@@ -16,7 +16,7 @@ const DEFAULT_CONFIG: AiConfig = {
   apiKey: '',
   modelName: 'gemini-2.0-flash',
   ollamaUrl: 'http://localhost:11434',
-  ollamaModel: 'llama3.2',
+  ollamaModel: 'qwen2.5-vl:7b',
   sessionOnly: false,
 }
 
