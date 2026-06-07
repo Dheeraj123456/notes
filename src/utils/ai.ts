@@ -129,11 +129,28 @@ async function fetchWithTimeout(input: RequestInfo, init: RequestInit & { timeou
   }
 }
 
+async function pingOllama(rawUrl: string): Promise<'ok' | 'unreachable' | 'cors'> {
+  const pingUrl = `${rawUrl.replace(/\/+$/, '')}/`
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), 3000)
+  try {
+    const res = await fetch(pingUrl, { method: 'GET', mode: 'no-cors', signal: controller.signal })
+    return res.type === 'opaque' || res.ok ? 'ok' : 'unreachable'
+  } catch {
+    return 'unreachable'
+  } finally {
+    clearTimeout(id)
+  }
+}
+
 async function callOllama(prompt: string, url: string, model: string, imageData?: string): Promise<string> {
   const rawUrl = url.replace(/\/+$/, '')
-  const endpoint = import.meta.env.DEV && rawUrl.startsWith('http://localhost:11434')
-    ? `/ollama/api/generate`
-    : `${rawUrl}/api/generate`
+
+  const onLocalhost = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  const viaProxy = import.meta.env.DEV && onLocalhost && rawUrl.includes('localhost')
+  const endpoint = viaProxy ? `/ollama/api/generate` : `${rawUrl}/api/generate`
+
   const body: any = { model, prompt, stream: false, options: { temperature: 0.7 } }
   if (imageData) {
     const comma = imageData.indexOf(',')
@@ -152,12 +169,21 @@ async function callOllama(prompt: string, url: string, model: string, imageData?
     if (err.name === 'AbortError') {
       throw new Error('Ollama request timed out (2 min). The model might still be loading or the server is busy.')
     }
+    const ping = await pingOllama(rawUrl)
+    if (ping === 'ok') {
+      throw new Error(
+        'Ollama server is running but the browser is blocking the request (CORS). Fix:\n' +
+        `  • Stop Ollama: ollama stop\n` +
+        `  • Restart with: OLLAMA_ORIGINS=* ollama serve\n` +
+        `  • Then pull model: ollama pull ${model}`
+      )
+    }
     throw new Error(
       'Cannot reach Ollama. Ensure the server is running:\n' +
       `  • Start: ollama serve\n` +
       `  • Pull model: ollama pull ${model}\n` +
-      `  • URL: ${endpoint}\n` +
-      `If using HTTPS for this site, set: OLLAMA_ORIGINS=*`
+      `  • URL: ${rawUrl}\n` +
+      `  • Check: curl ${rawUrl}/`
     )
   }
   if (!res.ok) {
